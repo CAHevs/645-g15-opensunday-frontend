@@ -1,3 +1,10 @@
 {
-  "locations": "/api/locations"
+  "location": "/api/location",
+  "user": "/api/user",
+  "city": "/api/city",
+  "date": "/api/date",
+  "type": "/api/type",
+  "reporting": "/api/reporting",
+  "rating": "/api/rating",
+  "location_per_date": "/api/location_per_date"
 }
