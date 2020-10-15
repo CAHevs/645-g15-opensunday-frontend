@@ -10,6 +10,7 @@ export default async function (url, getAccessTokenSilently, loginWithRedirect) {
     });
 
     let data = await response.json();
+    console.log(data);
     return data;
   } catch (e) {
     console.error(e);
