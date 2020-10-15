@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { BrowserRouter, Link, Route } from 'react-router-dom';
-import './App.css';
 
 class UserForm extends React.Component {
     constructor() {
