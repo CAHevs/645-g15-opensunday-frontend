@@ -9,7 +9,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'
 import UserForm from "./UserForm";
 import ProtectedRoute from "./components/ProtectedRoute";
-import NavBar from "./components/nav-bar";
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap'
 
 let userAuthenticated;
@@ -17,6 +16,13 @@ let userAuthenticated;
 class LocationsList extends React.Component {
   constructor(props) {
     super(props);
+
+    const names = ['Bruce','Alex','Tiago','Lee','Christopher Arteroz my love','mon amoureuse chérie']
+    return (
+      <div>
+        {names.map(name => <h2>{name}</h2>)}
+      </div>
+    )
   }
 }
 
@@ -30,9 +36,15 @@ class OpenSundayMap extends React.Component {
 
   render() {
     return (
-      <>
-        <h1>Hello map ?</h1>
-      </>
+      <div className="map-container">
+        <div className="map-left">
+          <OpenSundayMap />
+        </div>
+        <div className="locations-right">
+          {/* <LocationsList /> */}
+         
+        </div>
+      </div>
     );
   }
 }
@@ -169,7 +181,7 @@ function App() {
               onClick={handleLoginClick}
             >Login
               </a>
-}
+          }
         </Navbar.Collapse>
       </Navbar>
 

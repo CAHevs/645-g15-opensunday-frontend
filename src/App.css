@@ -71,3 +71,24 @@ hr{
   height: 1px;
   border: 0;
 }
+
+
+/* Style for showing the app side-by-side */
+.map-container{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  text-align: center;
+  font-size: medium;
+}
+
+.map-left{
+  flex-basis: 450px;
+  padding: 1em;
+  background: chocolate;
+}
+
+.locations-right{
+  flex-grow: 1;
+  background: chartreuse;
+}
