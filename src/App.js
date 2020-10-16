@@ -1,188 +1,176 @@
-    import React, { useState } from "react";
-    import "./App.css";
-    import { useAuth0 } from "@auth0/auth0-react";
-    import request from "./utils/request";
-    import endpoints from "./endpoints";
-    import Loading from "./components/Loading";
-    import { BrowserRouter, Link, Switch, Route, Redirect } from "react-router-dom";
-    import LocationDetails from "./pages/LocationDetails";
-    import DatePicker from 'react-datepicker';
-    import 'react-datepicker/dist/react-datepicker.css'
-    import UserForm from "./UserForm"
+import React, { useState } from "react";
+import "./App.css";
+import { useAuth0 } from "@auth0/auth0-react";
+import request from "./utils/request";
+import endpoints from "./endpoints";
+import Loading from "./components/Loading";
+import {BrowserRouter, Link, Switch, Route} from "react-router-dom";
+//import LocationDetails from "./pages/LocationDetails";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'
+import UserForm from "./UserForm";
+//import UserForm from "./UserForm"
 
-    function App() {
-      let [locations, setLocations] = useState([]);
-
-      let [userAuthenticated, setUserAuthenticated] = useState([]);
-
-      const [selectedDate, setSelectedDate] = useState(null);
-
-      //Get the city from the user's localization
-      let city = "Sion";
-
-      {
-        // const sunHolidDays = [{date: '20/10'}, {date: '21/10'},
-        // {date: '22/10'}, {date: '23/10'},
-        // {date: '24/10'}, {date: '24/10'}]
-
-        //list of sundays and holidays
-        // const holiSunday = date => {
-        //   const day = getDay(date);
-        //   return day ;
-        // };
+let userAuthenticated;
 
 
-        //list of sundays and holidays
-        // const holiSunday = date => {
-        //   const day = getDay(date);
-        //   return day !== 0 && day !== 6;
-        // };
-      }
+class LocationsList extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+}
 
 
-      //Authentification with Auth0
-      let {
+class OpenSundayMap extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectedDate : null,
+        }
+    }
+
+    render() {
+        return (
+            <>
+                <h1>{}</h1>
+            </>
+        );
+    }
+}
+class Home extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectedDate : null,
+        }
+    }
+    //Get the city from the user's localization
+    city = "Sion";
+
+    render() {
+        return (
+            <>
+                <h1>Welcome, login then select a town and a date</h1>
+
+                <input
+                    //fieldRef={this.titleInputRef}
+                    type="text"
+                    name="city"
+                    value={this.city}
+                    // onChange={this.handleFormChange}
+                    //placeholder="Title"
+                >
+                </input>
+
+
+                <DatePicker
+                    selected={this.state.selectedDate}
+                    onChange={this.state.selectedDate = this.date}
+                    filterDate={date => date.getDay() == 0}
+                    //filterDate={sunHolidDays}
+                    minDate={new Date()}
+                    placeholderText="Select a sunday or holiday"
+                />
+                <ul className="Map">
+                    <Link
+                        className="App-Map"
+                        to="/Map">
+                        <button>
+                            map me
+                        </button>
+
+                    </Link>
+                </ul>
+            </>
+        );
+    }
+}
+
+
+function App() {
+    let [locations, setLocations] = useState([]);
+
+    //Authentification with Auth0
+    let {
         loading,
         loginWithRedirect,
         logout,
         getAccessTokenSilently,
         isAuthenticated,
         user,
-      } = useAuth0();
+    } = useAuth0();
 
 
-      let checkAuthentication = async(e) => {
-        setUserAuthenticated( await request(
+    let checkAuthentication = async(e) => {
+        userAuthenticated = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/getauthenticateduser/${user.sub}`,
             getAccessTokenSilently,
-            loginWithRedirect
-        )
-      )
-      }
+            loginWithRedirect);
 
-      //Login button with authentification
-      let handleLoginClick = async (e) => {
+        setLocations( await request(
+            `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
+            getAccessTokenSilently,
+            loginWithRedirect
+        ));
+
+    }
+
+
+
+    //Login button with authentification
+    let handleLoginClick = async (e) => {
         e.preventDefault();
         await loginWithRedirect();
         await checkAuthentication();
 
-        /*let locations = await request(
-          `${process.env.REACT_APP_SERVER_URL}${endpoints.locations}`,
-          getAccessTokenSilently,
-          loginWithRedirect
-        );*/
+    };
 
-        //test if the user exists
-        // if (true) {
-        //   return <Redirect push to="./userform" />;
-
-        // }
-      };
-
-      let handleLogoutClick = async (e) => {
+    let handleLogoutClick = async (e) => {
         e.preventDefault();
         /*
         returnTo parameter is necessary because multiple apps use the same authentication backend
         */
         logout({ returnTo: window.location.origin });
-      };
+    };
 
-      if (loading) {
+    if (loading) {
         return <Loading />;
-      }
-
-
-
-      return (
-        <div className="App">
-          <header className="App-header">
-            {isAuthenticated ? (
-              /*If the user is authenticated*/
-              <a
-                className="App-link Logout-link"
-                href="#"
-                onClick={handleLogoutClick}
-              >Logout
-              </a>
-
-            ) :
-              /*if the user isn't authenticated */
-              <a className="App-link Logout-link"
-                href="#"
-                onClick={handleLoginClick}
-              >Login
-              </a>
-            }
-
-
-          </header>
-          <body className="App-body">
-              <h1>Welcome, login then select a town and a date</h1>
-
-              <input
-                  //fieldRef={this.titleInputRef}
-                  type="text"
-                  name="city"
-                  value={city}
-                  // onChange={this.handleFormChange}
-                  //placeholder="Title"
-              >
-              </input>
-
-
-              <DatePicker
-                  selected={selectedDate}
-                  onChange={date => setSelectedDate(date)}
-                  filterDate={date => date.getDay() == 0}
-                  //filterDate={sunHolidDays}
-                  minDate={new Date()}
-                  placeholderText="Select a sunday or holiday"
-              />
-
-              <BrowserRouter>
-                <Switch>
-                  <Route
-                      path="/"
-                      exact
-                      render={() => (
-                          <>
-
-                            {/* user != null
-                          ici on vérifie que le user exite dans notre db */}
-                            {isAuthenticated ? (
-                                    <ul className="Map">
-                                      <Link
-                                          className="App-Map"
-                                          to="/Map"
-                                          //onClick={}
-                                      >
-                                        <button>
-                                          {userAuthenticated} map me
-                                        </button>
-
-                                      </Link>
-                                    </ul>
-                                ) :
-                                (
-
-
-                                    //à changer !!!!!!!!!
-                                    //si le user n'existe pas, il doit remplir le userform
-                                    <>
-                                      {/* <Redirect push to="./userform" />; */}
-
-                                    </>
-
-                                )}
-                          </>
-                      )}
-                  />
-
-                </Switch>
-              </BrowserRouter>
-          </body>
-        </div>
-      );
     }
 
-    export default App;
+
+
+    return (
+        <BrowserRouter>
+            <header className="App-header">
+                {isAuthenticated ? (
+                        /*If the user is authenticated*/
+                        <a
+                            className="App-link Logout-link"
+                            href="#"
+                            onClick={handleLogoutClick}
+                        >Logout
+                        </a>
+
+                    ) :
+                    /*if the user isn't authenticated */
+                    <a className="App-link Logout-link"
+                       href="#"
+                       onClick={handleLoginClick}
+                    >Login
+                    </a>
+                }
+
+
+            </header>
+            <div className="App-body">
+                <Switch>
+                    <Route exact path="/" component={Home}/>
+                    <Route exact path="/Map" component={OpenSundayMap}/>
+                    <Route exact path="/UserForm" component={UserForm}/>
+                </Switch>
+            </div>
+        </BrowserRouter>
+    );
+}
+
+export default App;

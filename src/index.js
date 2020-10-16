@@ -14,7 +14,8 @@ ReactDOM.render(
     audience={auth_config.audience}
     useRefreshTokens={true}
   >
-    <App />
+      <App className="App"/>
+
   </Auth0Provider>,
   document.getElementById('root')
 );
