@@ -21,7 +21,7 @@ import leafShadow from '../assets/leaf-shadow.png';
 // });
 
 
-class OpenSundayMap extends Component {
+class OpenMap extends Component {
 
     //get Position of locations
   state = {
@@ -100,4 +100,4 @@ class OpenSundayMap extends Component {
   }
 
 }
-export default OpenSundayMap;
+export default OpenMap;

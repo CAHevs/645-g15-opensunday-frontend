@@ -78,17 +78,19 @@ hr{
   display: flex;
   flex-direction: row;
   width: 100%;
-  text-align: center;
-  font-size: medium;
+  /* text-align: center;
+  font-size: medium; */
 }
 
 .map-left{
-  flex-basis: 450px;
+  /* flex-basis: 450px; */
   padding: 1em;
   background: chocolate;
+  width: 50%;
 }
 
 .locations-right{
-  flex-grow: 1;
+  /* flex-grow: 1; */
   background: chartreuse;
+  width: 50%;
 }
