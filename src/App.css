@@ -9,7 +9,7 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 15vh;
+  min-height: 1vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,7 +19,7 @@
 }
 .App-body {
   background-color: #282c34;
-  min-height: 85vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -84,13 +84,30 @@ hr{
 
 .map-left{
   /* flex-basis: 450px; */
-  padding: 1em;
   background: chocolate;
-  width: 50%;
+  width: 75%;
+  max-height: 100vh;
 }
 
 .locations-right{
   /* flex-grow: 1; */
-  background: chartreuse;
-  width: 50%;
+  padding: 0.25em;
+  max-height: 100vh;
+  background: #efeaea;
+  width: 25%;
 }
+
+.accordion-summary{
+  font-size: 18px;
+}
+
+.accordion-detail{
+  font-size: 15px;
+  text-align: left;
+}
+.accordion-detail>p{
+  text-align: left;
+
+}
+
+

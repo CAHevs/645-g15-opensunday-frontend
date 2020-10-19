@@ -16,43 +16,18 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import {Navbar, Nav, NavDropdown} from 'react-bootstrap';
 import OpenMap from "./pages/OpenMap";
 import UserForm from "./UserForm";
+import LinearProgress from '@material-ui/core/LinearProgress';
+import LocationsList from "./components/LocationsList";
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
+
 
 let userAuthenticated;
-
-
-function LocationsList(props) {
-    let locations = props.locations;
-    return (
-        <>
-            <ul>
-                {locations.map(loc => (
-                    /*
-                    The key of the list item is currently just the index of
-                    the book in the array (0, 1, 2,...), as we do not have
-                    a unique ID for each book available so far.
-                     */
-                    <li key={loc.id}>
-                        {/* Display basic info about the Book */}
-                        <div>
-                            {/* Display a link leading to /book/..., to show  */}
-                            {/* the book details of the book that was clicked */}
-                            <p>
-                                {loc.name}, {loc.city.code} {loc.city.name}
-                            </p>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-
-        </>
-
-    );
-}
-
 
 function OpenSundayMap() {
 
     let [locations, setLocations] = useState([]);
+    let [isLoaded, setIsLoaded] = useState(false);
 
     let {
         loginWithRedirect,
@@ -69,11 +44,13 @@ function OpenSundayMap() {
     }, []);
 
     let getLocation = async (e) => {
+        setIsLoaded(false);
         let locations = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
             getAccessTokenSilently,
             loginWithRedirect)
         setLocations(locations);
+        setIsLoaded(true);
     }
 
 
@@ -83,9 +60,12 @@ function OpenSundayMap() {
                 <div className="map-left">
                     <OpenMap/>
                 </div>
-                <div className="locations-right">
-                    <LocationsList locations={locations}/>
-                </div>
+
+                    <div className="locations-right">
+                        <SimpleBar style={{maxHeight: "100%"}}>
+                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
+                        </SimpleBar>
+                    </div>
             </div>
 
         </>
@@ -128,7 +108,7 @@ function Home() {
 
             <Autocomplete
                 freeSolo
-                id="combo-box-demo"
+                id="combo-box"
                 options={cities}
                 getOptionLabel={(city) => city.name}
                 style={{width: 300}}
@@ -225,40 +205,42 @@ function App() {
     return (
         <BrowserRouter>
             <div className="App">
-                <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-                    <Navbar.Brand href="/">Home Sunday</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
-                    <Navbar.Collapse id="responsive-navbar-nav">
-                        <Nav className="mr-auto">
-                            <Nav.Link href="Map">Map</Nav.Link>
-                            <Nav.Link href="UserForm">Register</Nav.Link>
-                            <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
-                                <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                                <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-                                <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-                                <NavDropdown.Divider/>
-                                <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
-                            </NavDropdown>
-                        </Nav>
-                        {isAuthenticated ? (
-                                /*If the user is authenticated*/
-                                <a
-                                    className="App-link Logout-link"
-                                    href="#"
-                                    onClick={handleLogoutClick}
-                                >Logout
-                                </a>
+                <header>
+                    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+                        <Navbar.Brand href="/">Home Sunday</Navbar.Brand>
+                        <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
+                        <Navbar.Collapse id="responsive-navbar-nav">
+                            <Nav className="mr-auto">
+                                <Nav.Link href="Map">Map</Nav.Link>
+                                <Nav.Link href="UserForm">Register</Nav.Link>
+                                <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
+                                    <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                                    <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+                                    <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                                    <NavDropdown.Divider/>
+                                    <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                                </NavDropdown>
+                            </Nav>
+                            {isAuthenticated ? (
+                                    /*If the user is authenticated*/
+                                    <a
+                                        className="App-link Logout-link"
+                                        href="#"
+                                        onClick={handleLogoutClick}
+                                    >Logout
+                                    </a>
 
-                            ) :
-                            //if the user isn't authenticated */
-                            <a className="App-link Logout-link"
-                               href="#"
-                               onClick={handleLoginClick}
-                            >Login
-                            </a>
-                        }
-                    </Navbar.Collapse>
-                </Navbar>
+                                ) :
+                                //if the user isn't authenticated */
+                                <a className="App-link Logout-link"
+                                   href="#"
+                                   onClick={handleLoginClick}
+                                >Login
+                                </a>
+                            }
+                        </Navbar.Collapse>
+                    </Navbar>
+                </header>
                 <div className="App-body">
                     <Switch>
                         <Route exact path="/" component={Home}/>
