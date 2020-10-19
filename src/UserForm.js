@@ -1,5 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { BrowserRouter, Link, Route } from 'react-router-dom';
+import {Formik, Field, Form } from 'formik';
+
 
 class UserForm extends React.Component {
     constructor() {
@@ -37,7 +39,6 @@ class UserForm extends React.Component {
     handleFormSubmit = async (event) => {
       /* Prevent the form submission from reloading the page */
       event.preventDefault();
-  
       /* We now call the server to create our new book in the DB */
       /* Method is POST (for creation of resources)              */
       /* Content-Type header is set to application/json          */
@@ -62,6 +63,10 @@ class UserForm extends React.Component {
       /* Focus on the book title after adding a new book */
       //this.focusBookTitle();
     };
+
+    addUser(newUser){
+        console.log(newUser);
+    }
   
     /* Method for focusing on the book title, using the created ref */
     // focusBookTitle = (event) => {
@@ -80,47 +85,44 @@ class UserForm extends React.Component {
         <>
           {/* Render a form allowing to add a new book to the list */}
           <h2>Register yourself !</h2>
-          <form onSubmit={this.handleFormSubmit} className="NewUser-Form">
-            {/* All inputs have been replaced with FormInput components */}
-            <input
+
+
+          <Formik
+              initialValues={this.emptyUser}
+              onSubmit={this.handleFormSubmit}>
+            <Form>
+            <Field
               /* Link the created ref to the title input */
-              fieldRef={this.titleInputRef}
               type="text"
-              name="title"
+              name="firstname"
               value={this.state.newUser.firstname}
               onChange={this.handleFormInputChange}
-              placeholder="Title"
-            />
-            <input
+              placeholder="Firstname"
+            /><br/>
+            <Field
               type="text"
-              name="author"
+              name="lastname"
               value={this.state.newUser.lastname}
               onChange={this.handleFormInputChange}
-              placeholder="Author"
-            />
-            <input
-              type="number"
-              name="year"
+              placeholder="Lastname"
+            /><br/>
+            <Field
+              type="email"
+              name="email"
               value={this.state.newUser.email}
               onChange={this.handleFormInputChange}
-              placeholder="Year of Publication"
-            />
-            <input
+              placeholder="Email"
+            /><br/>
+            <Field
               type="number"
-              name="pages"
+              name="phone"
               value={this.state.newUser.phone}
               onChange={this.handleFormInputChange}
-              placeholder="Number of Pages"
-            />
-            <input
-              type="text"
-              name="cover"
-              value={this.state.newUser.ref_auth}
-              onChange={this.handleFormInputChange}
-              placeholder="ref_auth"
-            />
-            <button type="submit">Register</button>
-          </form>
+              placeholder="Phone number"
+            /><br/>
+              <button type="submit">Register</button>
+            </Form>
+          </Formik>
         </>
       );
     }
