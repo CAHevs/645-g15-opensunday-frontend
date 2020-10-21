@@ -58,7 +58,7 @@ function OpenSundayMap() {
         <>
             <div className="map-container">
                 <div className="map-left">
-                    <OpenMap/>
+                    <OpenMap locations={locations}/>
                 </div>
 
                     <div className="locations-right">
