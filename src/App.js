@@ -20,6 +20,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import LocationsList from "./components/LocationsList";
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
+import Button from "@material-ui/core/Button";
+import ManageLocation from "./pages/ManageLocation";
 
 
 let userAuthenticated;
@@ -37,6 +39,7 @@ function OpenSundayMap() {
 
     useEffect(() => {
         async function fetchLocation() {
+
             await getLocation();
         }
 
@@ -62,6 +65,7 @@ function OpenSundayMap() {
                 </div>
 
                     <div className="locations-right">
+                        <Button>Add a new Location</Button>
                         <SimpleBar style={{maxHeight: "100%"}}>
                         {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
                         </SimpleBar>
@@ -92,8 +96,6 @@ function Home() {
     }, []);
 
     let getAllCities = async (e) => {
-
-
         let cities = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
             getAccessTokenSilently,
@@ -214,7 +216,7 @@ function App() {
                                 <Nav.Link href="Map">Map</Nav.Link>
                                 <Nav.Link href="UserForm">Register</Nav.Link>
                                 <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
-                                    <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                                    <NavDropdown.Item href="ManageLocation">Manage Locations</NavDropdown.Item>
                                     <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
                                     <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
                                     <NavDropdown.Divider/>
@@ -246,6 +248,7 @@ function App() {
                         <Route exact path="/" component={Home}/>
                         <Route exact path="/Map" component={OpenSundayMap}/>
                         <Route exact path="/UserForm" component={UserForm}/>
+                        <Route exact path="/ManageLocation" component={ManageLocation}/>
                     </Switch>
                 </div>
             </div>

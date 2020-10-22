@@ -18,24 +18,9 @@ function UserForm() {
     };
 
     let {
-        loginWithRedirect,
         getAccessTokenSilently,
         user
     } = useAuth0();
-
-    emptyUser = {firstname: '', lastname: '', email: '', phone: '', isCreator: false, ref_auth: ''};
-  
-    /* Form input change handler */
-    let handleFormInputChange = (event) => {
-
-        const target = event.target;
-        const value = target.value;
-        const name = target.name;
-
-        this.setState((prevState) => ({
-            newUser: { ...prevState.newUser, [name]: value },
-        }));
-    };
 
     let newUserResponse = async(path, token, newUserToAdd) =>{
         let response = fetch(path, {
@@ -107,7 +92,7 @@ function UserForm() {
                         //onChange={handleFormInputChange}
                         placeholder="Phone number"
                     /><br/>
-                    <button type="submit">Register</button>
+                    <button type="submit" >Register</button>
                 </Form>
             </Formik>
         </>
