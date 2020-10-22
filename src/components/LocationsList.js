@@ -138,19 +138,17 @@ export default function LocationsList(props) {
             {locationToReport == null ? null : (
                 <Modal show={showReportModal} onHide={handleClose}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Report location</Modal.Title>
+                        <Modal.Title>Report location : {locationToReport.name}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                        <p>
-                           {locationToReport.name}
-                           {console.log(userContext.userAuthenticated.id)}
-                           {userContext.userAuthenticated.lastname}
+                           User Name : {userContext.userAuthenticated.lastname}
                        </p>
 
                         <Formik initialValues={{
                         id_Location: locationToReport.id,
                         Id_User: userContext.userAuthenticated.id,
-                        Report_Date: "",
+                        Report_Date: new Date(),
                         Comment:"",
                         Id_Date: null
                         }} onSubmit={handleReportSubmit}/>

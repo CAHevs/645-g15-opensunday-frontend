@@ -12,12 +12,6 @@ class AppWrapper extends React.Component {
         this.userAuthenticated = { userAuthenticated: null };
     }
 
-    setUserAuthenticated = (user) => {
-        this.setState((prevState) => ({
-            userAuthenticated: user
-        }));
-    };
-
     render() {
         return (
             <Auth0Provider
