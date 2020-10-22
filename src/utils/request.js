@@ -1,4 +1,4 @@
-export default async function (url, getAccessTokenSilently, loginWithRedirect) {
+export default async function (url, getAccessTokenSilently) {
   try {
     let token = await getAccessTokenSilently();
 
@@ -14,7 +14,7 @@ export default async function (url, getAccessTokenSilently, loginWithRedirect) {
     return data;
   } catch (e) {
     console.error(e);
-    await loginWithRedirect();
-    console.log("error");
+    return null;
+
   }
 }

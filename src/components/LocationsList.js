@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 import request from "../utils/request";
 import endpoints from "../endpoints.json";
@@ -11,17 +11,21 @@ import Accordion from "@material-ui/core/Accordion";
 import Modal from "react-bootstrap/Modal";
 import {Link} from "react-router-dom";
 import Button from '@material-ui/core/Button';
-import { Formik } from 'formik';
+import { Formik, Form } from 'formik';
+import {UserContext} from "../utils/UserContext";
 
 
 export default function LocationsList(props) {
     let locations = props.locations;
+
     let [rate, setRate] = useState(null);
     const [expanded, setExpanded] = React.useState(false);
     let [locationPerDate, setLocationPerDate] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     let [locationToReport, setLocationToReport] = useState(null);
+
+    const userContext = useContext(UserContext);
 
     const handleClose = () => {
         setShowReportModal(false);
@@ -32,7 +36,6 @@ export default function LocationsList(props) {
         loginWithRedirect,
         getAccessTokenSilently,
     } = useAuth0();
-
     let getLocation_per_Date = async (locationId) => {
         setIsLoaded(false);
         let locationPerDate = await request(
@@ -60,6 +63,9 @@ export default function LocationsList(props) {
         setShowReportModal(true);
         setLocationToReport(loc);
     };
+    const handleReportSubmit = async (report, event) =>{
+
+    }
 
 
     return (
@@ -135,7 +141,19 @@ export default function LocationsList(props) {
                         <Modal.Title>Report location</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        {locationToReport.name}
+                       <p>
+                           {locationToReport.name}
+                           {console.log(userContext.userAuthenticated.id)}
+                           {userContext.userAuthenticated.lastname}
+                       </p>
+
+                        <Formik initialValues={{
+                        id_Location: locationToReport.id,
+                        Id_User: userContext.userAuthenticated.id,
+                        Report_Date: "",
+                        Comment:"",
+                        Id_Date: null
+                        }} onSubmit={handleReportSubmit}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="contained" color="secondary" onClick={handleClose}>

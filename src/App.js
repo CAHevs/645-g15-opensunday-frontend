@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import "./App.css";
 import {useAuth0} from "@auth0/auth0-react";
 import request from "./utils/request";
@@ -20,11 +20,12 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import LocationsList from "./components/LocationsList";
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
+import {UserContext} from "./utils/UserContext";
 import Button from "@material-ui/core/Button";
 import ManageLocation from "./pages/ManageLocation";
 
 
-let userAuthenticated;
+let userAuth;
 
 function OpenSundayMap() {
 
@@ -50,8 +51,7 @@ function OpenSundayMap() {
         setIsLoaded(false);
         let locations = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
-            getAccessTokenSilently,
-            loginWithRedirect)
+            getAccessTokenSilently)
         setLocations(locations);
         setIsLoaded(true);
     }
@@ -67,7 +67,7 @@ function OpenSundayMap() {
                     <div className="locations-right">
                         <Button>Add a new Location</Button>
                         <SimpleBar style={{maxHeight: "100%"}}>
-                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
+                        {isLoaded ? (<LocationsList locations={locations} user={userAuth}/>) : <LinearProgress/>}
                         </SimpleBar>
                     </div>
             </div>
@@ -80,17 +80,18 @@ function Home() {
     let [selectedDate, setSelectedDate] = useState(null);
     //Get the city from the user's localization
     let [cities, setCities] = useState([]);
-
     let {
         loginWithRedirect,
         getAccessTokenSilently,
+        user,
     } = useAuth0();
+
+    const userContext = useContext(UserContext);
 
     useEffect(() => {
         async function fetchCities() {
             await getAllCities();
         }
-
         fetchCities();
 
     }, []);
@@ -98,10 +99,9 @@ function Home() {
     let getAllCities = async (e) => {
         let cities = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
-            getAccessTokenSilently,
-            loginWithRedirect
+            getAccessTokenSilently
         );
-        setCities(cities)
+        setCities(cities);
     }
 
     return (
@@ -144,12 +144,6 @@ function Home() {
 
 function App() {
 
-    let [userAuthenticated, setUserAuthenticated] = useState([]);
-
-    let [cities, setCities] = useState([]);
-
-    const [selectedDate, setSelectedDate] = useState(null);
-
     //Authentification with Auth0
     let {
         loading,
@@ -160,6 +154,7 @@ function App() {
         user,
     } = useAuth0();
 
+    let userContext = useContext(UserContext);
 
     //Get the city from the user's localization
     navigator.geolocation.getCurrentPosition(function (position) {
@@ -167,22 +162,23 @@ function App() {
         console.log("Longitude is : ", position.coords.longitude);
     });
 
-    let checkAuthentication = async (e) => {
-        setUserAuthenticated(await request(
+    let getUser = () =>{
+        userContext.userAuthenticated = "notFound";
+        checkAuthentication().catch();
+    }
+    let checkAuthentication = async () => {
+        userContext.userAuthenticated = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
-            getAccessTokenSilently,
-            loginWithRedirect
-            )
-        )
+            getAccessTokenSilently
+        );
+        console.log("My User Context :" + userContext.userAuthenticated);
     }
 
     //Login button with authentification
     let handleLoginClick = async (e) => {
         e.preventDefault();
         await loginWithRedirect();
-        await checkAuthentication();
     };
-
 
     let handleLogoutClick = async (e) => {
         e.preventDefault();
@@ -240,12 +236,21 @@ function App() {
                                 >Login
                                 </a>
                             }
+
                         </Navbar.Collapse>
                     </Navbar>
                 </header>
                 <div className="App-body">
                     <Switch>
-                        <Route exact path="/" component={Home}/>
+                        <Route exact path="/">
+                            {isAuthenticated ? <Home/> : (
+                                <div>
+                                    <h1>Welcome to OpenSunday, please log in</h1>
+                                    <button onClick={handleLoginClick}>Login</button>
+                                </div>
+                            )}
+                            {isAuthenticated && userContext.userAuthenticated===null ? getUser():null}
+                        </Route>
                         <Route exact path="/Map" component={OpenSundayMap}/>
                         <Route exact path="/UserForm" component={UserForm}/>
                         <Route exact path="/ManageLocation" component={ManageLocation}/>
@@ -255,5 +260,5 @@ function App() {
         </BrowserRouter>
     );
 }
-
 export default App;
+
