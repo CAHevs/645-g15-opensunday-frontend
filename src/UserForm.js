@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Redirect } from 'react-router-dom';
 import {Formik, Field, Form } from 'formik';
 import {useAuth0} from "@auth0/auth0-react";
 import endpoints from "./endpoints";
@@ -10,6 +10,8 @@ function UserForm() {
 
     let [emptyUser, setemptyUser] = useState([]);
     let [newUser, setnewUser] = useState([]);
+
+    const [registerDone, setregisterDone] = useState(false);
 
     const initialValues = {
         firstname: "",
@@ -58,6 +60,8 @@ function UserForm() {
         let token = await getAccessTokenSilently();
 
         await newUserResponse(path, token, newUserToAdd);
+
+        setregisterDone(true);
     };
 
     return (
@@ -93,6 +97,7 @@ function UserForm() {
                         placeholder="Phone number"
                     /><br/>
                     <button type="submit" >Register</button>
+                    {registerDone ? <Redirect to="/" /> : null}
                 </Form>
             </Formik>
         </>
