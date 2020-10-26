@@ -51,9 +51,7 @@ function UserForm() {
         let email = user.email;
         newUserToAdd["email"] = email;
         newUserToAdd["ref_auth"] = ref_auth;
-        console.log(newUserToAdd)
         newUserToAdd = JSON.stringify(newUserToAdd);
-        console.log(newUserToAdd);
 
         let path = process.env.REACT_APP_SERVER_URL + endpoints.user;
 
