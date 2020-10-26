@@ -13,6 +13,7 @@ class AppWrapper extends React.Component {
         this.userPosition = {userPosition: [null, null]};
     }
 
+<<<<<<< HEAD
     // setUserAuthenticated = (user) => {
     //     this.setState((prevState) => ({
     //         userAuthenticated: user
@@ -29,6 +30,8 @@ class AppWrapper extends React.Component {
     // };
 
 
+=======
+>>>>>>> 47b1a1e31275b5e9b8f84781e5b7586b3f78c580
     render() {
         return (
             <Auth0Provider
