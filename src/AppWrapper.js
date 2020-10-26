@@ -6,17 +6,28 @@ import React from "react";
 
 
 class AppWrapper extends React.Component {
-    /* Initialize state with a default theme */
+    /* Initialize state with 3 null components */
     constructor() {
         super();
         this.userAuthenticated = { userAuthenticated: null };
+        this.userPosition = {userPosition: [null, null]};
     }
 
-    setUserAuthenticated = (user) => {
-        this.setState((prevState) => ({
-            userAuthenticated: user
-        }));
-    };
+    // setUserAuthenticated = (user) => {
+    //     this.setState((prevState) => ({
+    //         userAuthenticated: user
+    //     }));
+    // };
+
+    // setUserPosition = (user) => {
+    //     this.setState((prevState) => ({
+    //     //         navigator.geolocation.getCurrentPosition(function (position) {
+    //     //             userContext.userPosition = [position.coords.longitude, position.coords.latitude]
+    //     //         })
+    //     //     };
+    //     // }));
+    // };
+
 
     render() {
         return (
@@ -27,7 +38,7 @@ class AppWrapper extends React.Component {
                 audience={auth_config.audience}
                 useRefreshTokens={true}
             >
-                <UserContext.Provider value={{ userAuthenticated: null}}>
+                <UserContext.Provider value={{ userAuthenticated: null}, {userPosition:[null, null]}}>
                     <App className="App"/>
                 </UserContext.Provider>
 
