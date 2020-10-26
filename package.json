@@ -25,6 +25,7 @@
     "react-dom": "^16.14.0",
     "react-leaflet": "^2.8.0",
     "react-map-gl-geocoder": "^2.1.5",
+    "react-native": "^0.63.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.4",
     "simplebar-react": "^2.3.0"
@@ -51,6 +52,7 @@
     ]
   },
   "devDependencies": {
-    "@material-ui/icons": "^4.9.1"
+    "@material-ui/icons": "^4.9.1",
+    "yup": "^0.29.3"
   }
 }

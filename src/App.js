@@ -28,6 +28,9 @@ import esri from 'esri-leaflet';
 
 
 function OpenSundayMap() {
+    //Get the city from the user's localization
+    let [cities, setCities] = useState([]);
+    let [selectedCity, setselectedCity] = useState(null);
     let [locations, setLocations] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     const userContext = useContext(UserContext);
@@ -38,6 +41,23 @@ function OpenSundayMap() {
         user,
     } = useAuth0();
 
+
+    useEffect(() => {
+        async function fetchCities() {
+            await getAllCities();
+        }
+
+        let getAllCities = async (e) => {
+            let cities = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
+                getAccessTokenSilently
+            );
+            setCities(cities);
+        }
+
+        fetchCities();
+
+    }, []);
     useEffect(() => {
         async function fetchLocation() {
             await getAllLocations();
@@ -55,31 +75,26 @@ function OpenSundayMap() {
         setIsLoaded(true);
     }
 
+
     return (
         <>
             <div className="map-container">
                 <div className="map-left">
                     <OpenMap locations={locations} positionUser={userContext.userPosition} />
                 </div>
-                <div className="locations-right">
-                    <Button>Add a new Location</Button>
-                    <SimpleBar style={{ maxHeight: "100%" }}>
-                        {/* cons */}
-                        {/* user={userAuth} */}
-                        {isLoaded ? (<LocationsList locations={locations} user={userContext.user} />) : <LinearProgress />}
-                    </SimpleBar>
-                </div>
+
+                    <div className="locations-right">
+                        <Button>Add a new Location</Button>
+                        <SimpleBar style={{maxHeight: "95%", height: "inherit"}}>
+                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
+                        </SimpleBar>
+                    </div>
             </div>
         </>
     );
 }
 
-function Home() {
-    let [selectedDate, setSelectedDate] = useState(null);
-    //Get the city from the user's localization
-    let [cities, setCities] = useState([]);
-
-    let [selectedCity, setselectedCity] = useState(null);
+/*function Home() {
 
 
     let {
@@ -90,29 +105,13 @@ function Home() {
 
     const userContext = useContext(UserContext);
 
-    useEffect(() => {
-        async function fetchCities() {
-            await getAllCities();
-        }
-        fetchCities();
 
-    }, []);
 
     //Get the location (latitude/longitude and the town)from the user's machine
-    navigator.geolocation.getCurrentPosition(async function (position) {
 
-        //Set the userContext with lat and lgn from navigator
-        userContext.userPosition = [position.coords.latitude, position.coords.longitude];
-    });
 
     //Get all the cities from the server
-    let getAllCities = async (e) => {
-        let cities = await request(
-            `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
-            getAccessTokenSilently
-        );
-        setCities(cities);
-    }
+
 
     return (
         <>
@@ -125,7 +124,7 @@ function Home() {
                 getOptionLabel={(city) => city.name}
                 style={{ width: 300 }}
                 getOptionSelected={selectedCity}
-                onChange={setselectedCity, console.log({ selectedCity })}
+                onChange={setselectedCity}
                 renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
             />
             <DatePicker
@@ -148,7 +147,7 @@ function Home() {
             </ul>
         </>
     );
-}
+}*/
 
 
 function App() {
@@ -177,7 +176,6 @@ function App() {
         );
         console.log("My User Context :" + userContext.userAuthenticated);
     }
-
 
     //Login button with authentification
     let handleLoginClick = async (e) => {
@@ -248,17 +246,17 @@ function App() {
                 <div className="App-body">
                     <Switch>
                         <Route exact path="/">
-                            {isAuthenticated ? <Home /> : (
+                            {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
-                                    {/* <h1>Welcome to OpenSunday, please log in</h1> */}
+                                    <h1>Welcome to OpenSunday, please log in</h1>
                                     <button onClick={handleLoginClick}>Login</button>
                                 </div>
                             )}
-                            {isAuthenticated && userContext.userAuthenticated === null ? getUser() : null}
+                            {isAuthenticated && userContext.userAuthenticated===null ? getUser():null}
                         </Route>
-                        <Route exact path="/Map" component={OpenSundayMap} />
-                        <Route exact path="/UserForm" component={UserForm} />
-                        <Route exact path="/ManageLocation" component={ManageLocation} />
+                        <Route exact path="/Map" component={OpenSundayMap}/>
+                        <Route exact path="/UserForm" component={UserForm}/>
+                        <Route exact path="/ManageLocation" component={ManageLocation}/>
                     </Switch>
                 </div>
             </div>

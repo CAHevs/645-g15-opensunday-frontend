@@ -9,11 +9,11 @@ class AppWrapper extends React.Component {
     /* Initialize state with 3 null components */
     constructor() {
         super();
-        this.userAuthenticated = { userAuthenticated: null };
+        this.userAuthenticated = {userAuthenticated: null};
         this.userPosition = {userPosition: [null, null]};
     }
 
-<<<<<<< HEAD
+
     // setUserAuthenticated = (user) => {
     //     this.setState((prevState) => ({
     //         userAuthenticated: user
@@ -29,9 +29,6 @@ class AppWrapper extends React.Component {
     //     // }));
     // };
 
-
-=======
->>>>>>> 47b1a1e31275b5e9b8f84781e5b7586b3f78c580
     render() {
         return (
             <Auth0Provider
@@ -41,9 +38,9 @@ class AppWrapper extends React.Component {
                 audience={auth_config.audience}
                 useRefreshTokens={true}
             >
-                <UserContext.Provider value={{ userAuthenticated: null}, {userPosition:[null, null]}}>
-                    <App className="App"/>
-                </UserContext.Provider>
+                <UserContext.Provider value={{userAuthenticated: null, userPosition:null}}>
+                <App className="App"/>
+            </UserContext.Provider>
 
             </Auth0Provider>
         );

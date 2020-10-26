@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import request from "../utils/request";
 import { useAuth0 } from "@auth0/auth0-react";
 import endpoints from "../endpoints";
@@ -27,14 +27,23 @@ function OpenMap(props) {
 
   //Get the locations from the "LocationsList.js" function in OpenSundayMap()
   let locations = props.locations;
+  const userContext = useContext(UserContext);
+
 
   //Get the position from the props given from Home page
   let positionUser = props.positionUser;
+  navigator.geolocation.getCurrentPosition(async function (position) {
+
+    //Set the userContext with lat and lgn from navigator
+    userContext.userPosition = [position.coords.latitude, position.coords.longitude];
+  });
+
 
   return (
+
     <Map
       className="map"
-      center={positionUser}
+      center={userContext.userPosition === null ? [46.2333,7.35]: userContext.userPosition}
       zoom={15}
     >
       <TileLayer
