@@ -226,7 +226,6 @@ export default function LocationsList(props) {
                                        onChange={handleRatingChange}
                                    />
                                </Box>
-                               {}
                            </div>
 
                             <Link to="#" onClick={handleReportClick(loc)}>
