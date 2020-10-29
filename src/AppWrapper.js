@@ -9,25 +9,23 @@ class AppWrapper extends React.Component {
     /* Initialize state with 3 null components */
     constructor() {
         super();
-        this.userAuthenticated = {userAuthenticated: null};
-        this.userPosition = {userPosition: [null, null]};
+        this.state = {
+            userAuthenticated: null,
+            userPosition: [46.35, 7.15]
+        };
     }
 
 
-    // setUserAuthenticated = (user) => {
-    //     this.setState((prevState) => ({
-    //         userAuthenticated: user
-    //     }));
-    // };
-
-    // setUserPosition = (user) => {
-    //     this.setState((prevState) => ({
-    //     //         navigator.geolocation.getCurrentPosition(function (position) {
-    //     //             userContext.userPosition = [position.coords.longitude, position.coords.latitude]
-    //     //         })
-    //     //     };
-    //     // }));
-    // };
+    setUserPosition = (userPosition) => {
+        this.setState({
+            userPosition: userPosition
+        });
+    };
+    setUserAuthenticated = (user) => {
+        this.setState({
+            userAuthenticated: user
+        });
+    };
 
     render() {
         return (
@@ -38,9 +36,15 @@ class AppWrapper extends React.Component {
                 audience={auth_config.audience}
                 useRefreshTokens={true}
             >
-                <UserContext.Provider value={{userAuthenticated: null, userPosition:null}}>
-                <App className="App"/>
-            </UserContext.Provider>
+                <UserContext.Provider
+                    value={{
+                        userAuthenticated: this.state.userAuthenticated,
+                        userPosition: this.state.userPosition,
+                        setUserAuthenticated: this.setUserAuthenticated,
+                        setUserPosition: this.setUserPosition
+                    }}>
+                    <App className="App"/>
+                </UserContext.Provider>
 
             </Auth0Provider>
         );

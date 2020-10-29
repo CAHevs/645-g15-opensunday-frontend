@@ -4,7 +4,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import request from "./utils/request";
 import endpoints from "./endpoints";
 import Loading from "./components/Loading";
-import { BrowserRouter, Link, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter, Link, Switch, Route, Redirect, useHistory } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import MaterialCore from '@material-ui/core';
@@ -22,9 +22,6 @@ import 'simplebar/dist/simplebar.min.css';
 import { UserContext } from "./utils/UserContext";
 import Button from "@material-ui/core/Button";
 import ManageLocation from "./pages/ManageLocation";
-import L from 'leaflet';
-import Geocoding from 'esri-leaflet-geocoder';
-import esri from 'esri-leaflet';
 
 
 function OpenSundayMap() {
@@ -34,19 +31,43 @@ function OpenSundayMap() {
     let [locations, setLocations] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     const userContext = useContext(UserContext);
-
+    let history = useHistory();
     let {
-        loginWithRedirect,
         getAccessTokenSilently,
         user,
     } = useAuth0();
 
-
     useEffect(() => {
-        async function fetchCities() {
-            await getAllCities();
+        async function fetchUser(){
+            let response = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
+                getAccessTokenSilently
+            );
+            if(response === 404){
+                userContext.setUserAuthenticated("notFound");
+                return;
+            }
+            userContext.setUserAuthenticated(response);
         }
 
+        if(userContext.userAuthenticated == null){
+            fetchUser();
+        }
+    }, []);
+
+    useEffect(() => {
+        if(userContext.userAuthenticated === "notFound")
+            history.push("/UserForm")
+    }, [userContext.userAuthenticated])
+
+
+
+
+    let checkAuthentication = async () => {
+
+    }
+
+    useEffect(() => {
         let getAllCities = async (e) => {
             let cities = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
@@ -55,25 +76,25 @@ function OpenSundayMap() {
             setCities(cities);
         }
 
-        fetchCities();
+        getAllCities().catch();
 
     }, []);
     useEffect(() => {
         async function fetchLocation() {
             await getAllLocations();
         }
-        fetchLocation();
+        let getAllLocations = async (e) => {
+            setIsLoaded(false);
+            let locations = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
+                getAccessTokenSilently)
+            setLocations(locations);
+            setIsLoaded(true);
+        }
+
+        fetchLocation().catch();
     }, []);
 
-    //Getting all the locations from the server
-    let getAllLocations = async (e) => {
-        setIsLoaded(false);
-        let locations = await request(
-            `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
-            getAccessTokenSilently)
-        setLocations(locations);
-        setIsLoaded(true);
-    }
 
 
     return (
@@ -157,25 +178,10 @@ function App() {
         loading,
         loginWithRedirect,
         logout,
-        getAccessTokenSilently,
         isAuthenticated,
-        user,
     } = useAuth0();
 
     let userContext = useContext(UserContext);
-
-
-    let getUser = () => {
-        userContext.userAuthenticated = "notFound";
-        checkAuthentication().catch();
-    }
-    let checkAuthentication = async () => {
-        userContext.userAuthenticated = await request(
-            `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
-            getAccessTokenSilently
-        );
-        console.log("My User Context :" + userContext.userAuthenticated);
-    }
 
     //Login button with authentification
     let handleLoginClick = async (e) => {
@@ -185,9 +191,7 @@ function App() {
 
     let handleLogoutClick = async (e) => {
         e.preventDefault();
-        /*
-    returnTo parameter is necessary because multiple apps use the same authentication backend
-    */
+        userContext.setUserAuthenticated(null);
         logout({ returnTo: window.location.origin });
     };
 
@@ -195,13 +199,6 @@ function App() {
         return <Loading />;
     }
 
-    let handleFormSubmit = async (e) => {
-        console.log("map me")
-    }
-
-    let findNearMe = async (e) => {
-
-    }
 
     return (
         <BrowserRouter>
@@ -252,11 +249,10 @@ function App() {
                                     <button onClick={handleLoginClick}>Login</button>
                                 </div>
                             )}
-                            {isAuthenticated && userContext.userAuthenticated===null ? getUser():null}
                         </Route>
-                        <Route exact path="/Map" component={OpenSundayMap}/>
-                        <Route exact path="/UserForm" component={UserForm}/>
-                        <Route exact path="/ManageLocation" component={ManageLocation}/>
+                        <ProtectedRoute exact path="/Map" component={OpenSundayMap}/>
+                        <ProtectedRoute exact path="/UserForm" component={UserForm}/>
+                        <ProtectedRoute exact path="/ManageLocation" component={ManageLocation}/>
                     </Switch>
                 </div>
             </div>
