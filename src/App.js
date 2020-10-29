@@ -23,11 +23,10 @@ import { UserContext } from "./utils/UserContext";
 import Button from "@material-ui/core/Button";
 import ManageLocation from "./pages/ManageLocation";
 
-
 function OpenSundayMap() {
-     
     //Get the city from the user's localization
     let [cities, setCities] = useState([]);
+    let [selectedCity, setselectedCity] = useState(null);
     let [locations, setLocations] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     const userContext = useContext(UserContext);
@@ -72,86 +71,66 @@ function OpenSundayMap() {
         <>
             <div className="map-container">
                 <div className="map-left">
-                    <OpenMap locations={locations} positionUser={userContext.userPosition} cities={cities} />
+                    <OpenMap locations={locations} positionUser={userContext.userPosition} />
                 </div>
 
-                <div className="locations-right">
-                    <Button>Add a new Location</Button>
-                    <SimpleBar style={{ maxHeight: "95%", height: "inherit" }}>
-                        {isLoaded ? (<LocationsList locations={locations} />) : <LinearProgress />}
-                    </SimpleBar>
-                </div>
+                    <div className="locations-right">
+                        <Button>Add a new Location</Button>
+                        <SimpleBar style={{maxHeight: "95%", height: "inherit"}}>
+                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
+                        </SimpleBar>
+                    </div>
             </div>
         </>
     );
 }
 
-// function Home() {
-
-
-//     let {
-//         loginWithRedirect,
-//         getAccessTokenSilently,
-//         user,
-//     } = useAuth0();
-
-//     const userContext = useContext(UserContext);
-
-
-
-//     //Get the location (latitude/longitude and the town)from the user's machine
-
-
-//     //Get all the cities from the server
-
-
-//     return (
-//         <>
-//             <h1>Welcome, select a town and a date</h1>
-
-//             <Autocomplete
-//                 freeSolo
-//                 id="combo-box"
-//                 options={cities}
-//                 getOptionLabel={(city) => city.name}
-//                 style={{ width: 300 }}
-//                 getOptionSelected={selectedCity}
-//                 onChange={setselectedCity}
-//                 renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
-//             />
-//             <DatePicker
-//                 selected={selectedDate}
-//                 onChange={date => setSelectedDate(date)}
-//                 filterDate={date => date.getDay() == 0}
-//                 //filterDate={sunHolidDays}
-//                 minDate={new Date()}
-//                 placeholderText="Select a sunday or holiday"
-//             />
-//             {}
-//             <ul className="Map">
-//                 <Link
-//                     className="App-Map"
-//                     to="/Map">
-//                     <button>
-//                         map me
-//                     </button>
-//                 </Link>
-//             </ul>
-//         </>
-//     );
-// }
+/*function Home() {
+    let {
+        loginWithRedirect,
+        getAccessTokenSilently,
+        user,
+    } = useAuth0();
+    const userContext = useContext(UserContext);
+    //Get the location (latitude/longitude and the town)from the user's machine
+    //Get all the cities from the server
+    return (
+        <>
+            <h1>Welcome, select a town and a date</h1>
+            <Autocomplete
+                freeSolo
+                id="combo-box"
+                options={cities}
+                getOptionLabel={(city) => city.name}
+                style={{ width: 300 }}
+                getOptionSelected={selectedCity}
+                onChange={setselectedCity}
+                renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
+            />
+            <DatePicker
+                selected={selectedDate}
+                onChange={date => setSelectedDate(date)}
+                filterDate={date => date.getDay() == 0}
+                //filterDate={sunHolidDays}
+                minDate={new Date()}
+                placeholderText="Select a sunday or holiday"
+            />
+            {}
+            <ul className="Map">
+                <Link
+                    className="App-Map"
+                    to="/Map">
+                    <button>
+                        map me
+                    </button>
+                </Link>
+            </ul>
+        </>
+    );
+}*/
 
 
 function App() {
-
-    let userContext = useContext(UserContext);
-
-    navigator.geolocation.getCurrentPosition(async function (position) {
-
-        //Set the userContext with lat and lgn from navigator
-        userContext.userPosition = [position.coords.latitude, position.coords.longitude];
-    });
-
 
     //Authentification with Auth0
     let {
@@ -163,6 +142,7 @@ function App() {
         user
     } = useAuth0();
 
+    let userContext = useContext(UserContext);
 
     useEffect(() => {
         async function fetchUser(){
@@ -248,13 +228,12 @@ function App() {
                 <div className="App-body">
                     <Switch>
                         <Route exact path="/">
-                            {isAuthenticated ? <OpenSundayMap /> : (
+                            {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
                                     <button onClick={handleLoginClick}>Login</button>
                                 </div>
                             )}
-                            {isAuthenticated && userContext.userAuthenticated === null ? getUser() : null}
                         </Route>
                         <ProtectedRoute exact path="/UserForm" component={UserForm}/>
                         <ProtectedRoute exact path="/ManageLocation" component={ManageLocation}/>
@@ -265,4 +244,3 @@ function App() {
     );
 }
 export default App;
-
