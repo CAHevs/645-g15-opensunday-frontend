@@ -38,34 +38,9 @@ function OpenSundayMap() {
     } = useAuth0();
 
     useEffect(() => {
-        async function fetchUser(){
-            let response = await request(
-                `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
-                getAccessTokenSilently
-            );
-            if(response === 404){
-                userContext.setUserAuthenticated("notFound");
-                return;
-            }
-            userContext.setUserAuthenticated(response);
-        }
-
-        if(userContext.userAuthenticated == null){
-            fetchUser();
-        }
-    }, []);
-
-    useEffect(() => {
         if(userContext.userAuthenticated === "notFound")
             history.push("/UserForm")
     }, [userContext.userAuthenticated])
-
-
-
-
-    let checkAuthentication = async () => {
-
-    }
 
     useEffect(() => {
         let getAllCities = async (e) => {
@@ -81,9 +56,6 @@ function OpenSundayMap() {
     }, []);
     useEffect(() => {
         async function fetchLocation() {
-            await getAllLocations();
-        }
-        let getAllLocations = async (e) => {
             setIsLoaded(false);
             let locations = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
@@ -91,7 +63,6 @@ function OpenSundayMap() {
             setLocations(locations);
             setIsLoaded(true);
         }
-
         fetchLocation().catch();
     }, []);
 
@@ -188,7 +159,32 @@ function App() {
         loginWithRedirect,
         logout,
         isAuthenticated,
+        getAccessTokenSilently,
+        user
     } = useAuth0();
+
+
+    useEffect(() => {
+        async function fetchUser(){
+            let response = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
+                getAccessTokenSilently
+            );
+            if(response === 404){
+                userContext.setUserAuthenticated("notFound");
+                return;
+            }
+            userContext.setUserAuthenticated(response);
+        }
+
+        if(isAuthenticated){
+            if(userContext.userAuthenticated == null){
+                fetchUser().catch();
+            }
+        }
+
+    }, [isAuthenticated]);
+
 
 
     //Login button with authentification
@@ -208,6 +204,8 @@ function App() {
     }
 
 
+
+
     return (
         <BrowserRouter>
             <div className="App">
@@ -217,7 +215,6 @@ function App() {
                         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                         <Navbar.Collapse id="responsive-navbar-nav">
                             <Nav className="mr-auto">
-                                <Nav.Link href="Map">Map</Nav.Link>
                                 <Nav.Link href="UserForm">Register</Nav.Link>
                                 <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
                                     <NavDropdown.Item href="ManageLocation">Manage Locations</NavDropdown.Item>
@@ -259,9 +256,8 @@ function App() {
                             )}
                             {isAuthenticated && userContext.userAuthenticated === null ? getUser() : null}
                         </Route>
-                        <Route exact path="/Map" component={OpenSundayMap} />
-                        <Route exact path="/UserForm" component={UserForm} />
-                        <Route exact path="/ManageLocation" component={ManageLocation} />
+                        <ProtectedRoute exact path="/UserForm" component={UserForm}/>
+                        <ProtectedRoute exact path="/ManageLocation" component={ManageLocation}/>
                     </Switch>
                 </div>
             </div>
