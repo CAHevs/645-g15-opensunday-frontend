@@ -45,7 +45,7 @@ export default function ManageLocations(props){
     let delMod = false;
     let addMod = false;
 
-    const userContext = useContext(UserContext);
+    let userContext = useContext(UserContext);
 
     useEffect(() => {
         let fetchEverything = async(e) => {
@@ -59,6 +59,7 @@ export default function ManageLocations(props){
     }, []);
 
     const initialValues = {
+        id_User: "",
         name: "",
         address: "",
         id_Type: "",
@@ -222,7 +223,6 @@ export default function ManageLocations(props){
         newLocation["id_User"] = userContext.userAuthenticated.id;
 
         newLocation = JSON.stringify(newLocation);
-        console.log(newLocation);
 
         let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
 
@@ -240,6 +240,7 @@ export default function ManageLocations(props){
         });
 
         addMod = false;
+
         handleClose();
     }
 

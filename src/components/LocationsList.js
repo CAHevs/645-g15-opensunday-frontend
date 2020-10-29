@@ -32,8 +32,6 @@ export default function LocationsList(props) {
     let [filteredFutureDates, setFilteredFutureDates] = useState(null);
     let [showSendRating, setShowSendRating] = useState(false);
 
-
-
     const userContext = useContext(UserContext);
 
     const reportingValidationSchema = Yup.object({
@@ -110,6 +108,7 @@ export default function LocationsList(props) {
     };
     const handleReportSubmit = async (report) => {
         report.Report_Date = new Date().toISOString();
+        console.log('report to post',report)
 
         let response = await postRequest(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.reporting}`,
