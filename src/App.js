@@ -28,9 +28,9 @@ import esri from 'esri-leaflet';
 
 
 function OpenSundayMap() {
+    
     //Get the city from the user's localization
     let [cities, setCities] = useState([]);
-    let [selectedCity, setselectedCity] = useState(null);
     let [locations, setLocations] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     const userContext = useContext(UserContext);
@@ -42,6 +42,7 @@ function OpenSundayMap() {
     } = useAuth0();
 
 
+    //Get all cities
     useEffect(() => {
         async function fetchCities() {
             await getAllCities();
@@ -80,77 +81,86 @@ function OpenSundayMap() {
         <>
             <div className="map-container">
                 <div className="map-left">
-                    <OpenMap locations={locations} positionUser={userContext.userPosition} />
+                    <OpenMap locations={locations} positionUser={userContext.userPosition} cities={cities} />
                 </div>
 
-                    <div className="locations-right">
-                        <Button>Add a new Location</Button>
-                        <SimpleBar style={{maxHeight: "95%", height: "inherit"}}>
-                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
-                        </SimpleBar>
-                    </div>
+                <div className="locations-right">
+                    <Button>Add a new Location</Button>
+                    <SimpleBar style={{ maxHeight: "95%", height: "inherit" }}>
+                        {isLoaded ? (<LocationsList locations={locations} />) : <LinearProgress />}
+                    </SimpleBar>
+                </div>
             </div>
         </>
     );
 }
 
-/*function Home() {
+// function Home() {
 
 
-    let {
-        loginWithRedirect,
-        getAccessTokenSilently,
-        user,
-    } = useAuth0();
+//     let {
+//         loginWithRedirect,
+//         getAccessTokenSilently,
+//         user,
+//     } = useAuth0();
 
-    const userContext = useContext(UserContext);
-
-
-
-    //Get the location (latitude/longitude and the town)from the user's machine
+//     const userContext = useContext(UserContext);
 
 
-    //Get all the cities from the server
+
+//     //Get the location (latitude/longitude and the town)from the user's machine
 
 
-    return (
-        <>
-            <h1>Welcome, select a town and a date</h1>
+//     //Get all the cities from the server
 
-            <Autocomplete
-                freeSolo
-                id="combo-box"
-                options={cities}
-                getOptionLabel={(city) => city.name}
-                style={{ width: 300 }}
-                getOptionSelected={selectedCity}
-                onChange={setselectedCity}
-                renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
-            />
-            <DatePicker
-                selected={selectedDate}
-                onChange={date => setSelectedDate(date)}
-                filterDate={date => date.getDay() == 0}
-                //filterDate={sunHolidDays}
-                minDate={new Date()}
-                placeholderText="Select a sunday or holiday"
-            />
-            {}
-            <ul className="Map">
-                <Link
-                    className="App-Map"
-                    to="/Map">
-                    <button>
-                        map me
-                    </button>
-                </Link>
-            </ul>
-        </>
-    );
-}*/
+
+//     return (
+//         <>
+//             <h1>Welcome, select a town and a date</h1>
+
+//             <Autocomplete
+//                 freeSolo
+//                 id="combo-box"
+//                 options={cities}
+//                 getOptionLabel={(city) => city.name}
+//                 style={{ width: 300 }}
+//                 getOptionSelected={selectedCity}
+//                 onChange={setselectedCity}
+//                 renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
+//             />
+//             <DatePicker
+//                 selected={selectedDate}
+//                 onChange={date => setSelectedDate(date)}
+//                 filterDate={date => date.getDay() == 0}
+//                 //filterDate={sunHolidDays}
+//                 minDate={new Date()}
+//                 placeholderText="Select a sunday or holiday"
+//             />
+//             {}
+//             <ul className="Map">
+//                 <Link
+//                     className="App-Map"
+//                     to="/Map">
+//                     <button>
+//                         map me
+//                     </button>
+//                 </Link>
+//             </ul>
+//         </>
+//     );
+// }
 
 
 function App() {
+
+    let userContext = useContext(UserContext);
+
+    navigator.geolocation.getCurrentPosition(async function (position) {
+
+        //Set the userContext with lat and lgn from navigator
+        userContext.userPosition = [position.coords.latitude, position.coords.longitude];
+    });
+
 
     //Authentification with Auth0
     let {
@@ -162,7 +172,6 @@ function App() {
         user,
     } = useAuth0();
 
-    let userContext = useContext(UserContext);
 
 
     let getUser = () => {
@@ -170,11 +179,12 @@ function App() {
         checkAuthentication().catch();
     }
     let checkAuthentication = async () => {
+
         userContext.userAuthenticated = await request(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
             getAccessTokenSilently
         );
-        console.log("My User Context :" + userContext.userAuthenticated);
+        console.log("My User Context :" + userContext.userAuthenticated);        
     }
 
     //Login button with authentification
@@ -246,17 +256,17 @@ function App() {
                 <div className="App-body">
                     <Switch>
                         <Route exact path="/">
-                            {isAuthenticated ? <OpenSundayMap/> : (
+                            {isAuthenticated ? <OpenSundayMap /> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
                                     <button onClick={handleLoginClick}>Login</button>
                                 </div>
                             )}
-                            {isAuthenticated && userContext.userAuthenticated===null ? getUser():null}
+                            {isAuthenticated && userContext.userAuthenticated === null ? getUser() : null}
                         </Route>
-                        <Route exact path="/Map" component={OpenSundayMap}/>
-                        <Route exact path="/UserForm" component={UserForm}/>
-                        <Route exact path="/ManageLocation" component={ManageLocation}/>
+                        <Route exact path="/Map" component={OpenSundayMap} />
+                        <Route exact path="/UserForm" component={UserForm} />
+                        <Route exact path="/ManageLocation" component={ManageLocation} />
                     </Switch>
                 </div>
             </div>
