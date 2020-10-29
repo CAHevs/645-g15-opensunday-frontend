@@ -4,6 +4,7 @@ import {Formik, Field, Form } from 'formik';
 import {useAuth0} from "@auth0/auth0-react";
 import endpoints from "./endpoints";
 import request from "./utils/request";
+import * as Yup from 'yup';
 
 
 function UserForm() {
@@ -18,6 +19,20 @@ function UserForm() {
         lastname: "",
         phone: ""
     };
+
+    const registerSchema = Yup.object().shape({
+        firstname: Yup.string()
+            .min(2, 'Too Short')
+            .max(50, 'Too Long')
+            .required('Required'),
+        lastname: Yup.string()
+            .min(2, 'Too Short')
+            .max(50, 'Too Long')
+            .required('Required'),
+        phone: Yup.number()
+            .test('len', 'Must be exactly 10', val => val.toString().length === 10)
+            .required('Required'),
+    })
 
     let {
         getAccessTokenSilently,
@@ -62,41 +77,55 @@ function UserForm() {
         setregisterDone(true);
     };
 
+
+
     return (
         <>
             {/* Render a form allowing to add a new book to the list */}
             <h2>Register yourself !</h2>
             <Formik
                 initialValues={initialValues}
+                validationSchema={registerSchema}
                 onSubmit={(values) => {
                     handleFormSubmit(values);
                 }}>
-                <Form>
-                    <Field
-                        /* Link the created ref to the title input */
-                        type="text"
-                        name="firstname"
-                        //value={this.state.newUser.firstname}
-                        //onChange={handleFormInputChange}
-                        placeholder="Firstname"
-                    /><br/>
-                    <Field
-                        type="text"
-                        name="lastname"
-                        //value={values.lastname}
-                        //onChange={handleFormInputChange}
-                        placeholder="Lastname"
-                    /><br/>
-                    <Field
-                        type="number"
-                        name="phone"
-                        //value={this.state.newUser.phone}
-                        //onChange={handleFormInputChange}
-                        placeholder="Phone number"
-                    /><br/>
-                    <button type="submit" >Register</button>
-                    {registerDone ? <Redirect to="/" /> : null}
-                </Form>
+                {({errors, touched}) =>(
+                    <Form>
+                        <Field
+                            /* Link the created ref to the title input */
+                            type="text"
+                            name="firstname"
+                            placeholder="Firstname"
+                        />{errors.firstname && touched.firstname ? (
+                            <div>{errors.firstname}</div>
+                    ) : null}
+                        <br/>
+                        <Field
+                            type="text"
+                            name="lastname"
+                            //value={values.lastname}
+                            //onChange={handleFormInputChange}
+                            placeholder="Lastname"
+                        />
+                        {errors.lastname && touched.lastname ? (
+                            <div>{errors.lastname}</div>
+                        ) : null}
+                        <br/>
+                        <Field
+                            type="number"
+                            name="phone"
+                            //value={this.state.newUser.phone}
+                            //onChange={handleFormInputChange}
+                            placeholder="Phone number"
+                        />
+                        {errors.phone && touched.phone ? (
+                            <div>{errors.phone}</div>
+                        ) : null}
+                        <br/><br/>
+                        <button type="submit" >Register</button>
+                        {registerDone ? <Redirect to="/" /> : null}
+                    </Form>
+                )}
             </Formik>
         </>
     );
