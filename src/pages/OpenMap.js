@@ -14,14 +14,15 @@ import TextField from "@material-ui/core/TextField";
 
 function OpenMap(props) {
 
-    let {
-        loginWithRedirect,
-        getAccessTokenSilently,
-        user,
-    } = useAuth0();
+  let {
+    loginWithRedirect,
+    getAccessTokenSilently,
+    user,
+  } = useAuth0();
 
 
   let [selectedCity, setselectedCity] = useState(null);
+
 
   //Get all the cities from OpenSundayMap()
   let cities = props.cities;
@@ -29,17 +30,17 @@ function OpenMap(props) {
   //Get the locations from the "LocationsList.js" function in OpenSundayMap()
   let locations = props.locations;
 
+
   const userContext = useContext(UserContext);
 
 
- // Get the position from the props given from Home page
-    let positionUser = props.positionUser;
-    navigator.geolocation.getCurrentPosition(async function (position) {
+  // Get the position from the props given from Home page
+  navigator.geolocation.getCurrentPosition(async function (position) {
 
-      //Set the userContext with lat and lgn from navigator
-      userContext.setUserPosition = [position.coords.latitude, position.coords.longitude];
-    });
-  
+    //Set the userContext with lat and lgn from navigator
+    userContext.setUserPosition = [position.coords.latitude, position.coords.longitude];
+  });
+
 
   return (
     <>
@@ -56,6 +57,7 @@ function OpenMap(props) {
 
       <Map
         className="map"
+        //if the user doesn't give his location, the map's center is at Sion, Valais
         center={userContext.userPosition === null ? [46.2333, 7.35] : userContext.userPosition}
         zoom={15}
       >
@@ -63,15 +65,43 @@ function OpenMap(props) {
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
         />
-        {locations.map((loc, index) =>
+        {
+          // (userContext.userPosition &&
+          //   <Marker
+          //     position={userContext.userPosition}
+          //   >
+          //     <Popup>You are here</Popup>
+          //   </Marker>
+          // )
 
-          //Get latitude and longitude from each location and display it in a Marker on the map
-          <Marker key={`marker-${index}`} position={[loc.lat, loc.lng]}>
-            <Popup>
-              <span>{loc.name} <br /> {loc.type.description}</span>
-            </Popup>
-          </Marker>
-        )}
+
+
+
+
+
+          locations.map((loc, index) =>
+
+            //Get latitude and longitude from each location and display it in a Marker on the map
+            <Marker key={`marker-${index}`} position={[loc.lat, loc.lng]}>
+              <Popup>
+                <span>{loc.name} <br /> {loc.type.description}</span>
+              </Popup>
+            </Marker>
+
+
+
+          ),
+          
+          <Marker
+              position={userContext.userPosition}
+            >
+              <Popup>You are here</Popup>
+            </Marker>
+          }
+
+
+
+
         <button>FIND ME</button>
       </Map>
 
