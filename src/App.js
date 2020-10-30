@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {useContext, useEffect, useState} from "react";
 import "./App.css";
-import { useAuth0 } from "@auth0/auth0-react";
+import {useAuth0} from "@auth0/auth0-react";
 import request from "./utils/request";
 import endpoints from "./endpoints";
 import Loading from "./components/Loading";
-import { BrowserRouter, Link, Switch, Route, Redirect, useHistory } from "react-router-dom";
+import {BrowserRouter, Link, Switch, Route, Redirect, useHistory, useParams} from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import MaterialCore from '@material-ui/core';
@@ -12,14 +12,14 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from "@material-ui/core/TextField";
 import 'react-datepicker/dist/react-datepicker.css';
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import {Navbar, Nav, NavDropdown} from 'react-bootstrap';
 import OpenMap from "./pages/OpenMap";
 import UserForm from "./UserForm";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import LocationsList from "./components/LocationsList";
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
-import { UserContext } from "./utils/UserContext";
+import {UserContext} from "./utils/UserContext";
 import Button from "@material-ui/core/Button";
 import Modal from "react-bootstrap/Modal";
 import {Field, Form, Formik} from "formik";
@@ -41,7 +41,7 @@ function OpenSundayMap() {
     } = useAuth0();
 
     useEffect(() => {
-        if(userContext.userAuthenticated === "notFound")
+        if (userContext.userAuthenticated === "notFound")
             history.push("/UserForm")
     }, [userContext.userAuthenticated])
 
@@ -66,6 +66,7 @@ function OpenSundayMap() {
         getAllTypes().catch();
 
     }, []);
+
     useEffect(() => {
         async function fetchLocation() {
             setIsLoaded(false);
@@ -75,6 +76,7 @@ function OpenSundayMap() {
             setLocations(locations);
             setIsLoaded(true);
         }
+
         fetchLocation().catch();
     }, []);
 
@@ -195,13 +197,23 @@ function OpenSundayMap() {
         <>
             <div className="map-container">
                 <div className="map-left">
+                    {locations.length === 0 ? null
+                    : <OpenMap locations={locations}
+                               cities={cities}
+                               positionUser={userContext.userPosition}
+                            /*location={locationId === null ? null : locations.find(location => location.id === +locationId)}*/
+
+                        />}
+
+
                     <OpenMap locations={locations} positionUser={userContext.userPosition} />
                 </div>
 
                 <div className="locations-right">
                     <Button onClick={handleAddClick}>Add a new Location</Button>
                     <SimpleBar style={{maxHeight: "95%", height: "inherit"}}>
-                        {isLoaded ? (<LocationsList locations={locations}/>) : <LinearProgress/>}
+                        {isLoaded ? (<LocationsList locations={locations}/>)
+                            : <LinearProgress/>}
                     </SimpleBar>
                 </div>
             </div>
@@ -315,21 +327,20 @@ function App() {
     }, [userContext])
 
     useEffect(() => {
-        async function fetchUser(){
+        async function fetchUser() {
             let response = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
                 getAccessTokenSilently
             );
-
-            if(response === 404){
+            if (response === 404) {
                 userContext.setUserAuthenticated("notFound");
                 return;
             }
             userContext.setUserAuthenticated(response);
         }
 
-        if(isAuthenticated){
-            if(userContext.userAuthenticated == null){
+        if (isAuthenticated) {
+            if (userContext.userAuthenticated == null) {
                 fetchUser().catch();
             }
         }
@@ -347,11 +358,11 @@ function App() {
     let handleLogoutClick = async (e) => {
         e.preventDefault();
         userContext.setUserAuthenticated(null);
-        logout({ returnTo: window.location.origin });
+        logout({returnTo: window.location.origin});
     };
 
     if (loading) {
-        return <Loading />;
+        return <Loading/>;
     }
 
 
@@ -361,7 +372,7 @@ function App() {
                 <header>
                     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
                         <Navbar.Brand href="/">Home Sunday</Navbar.Brand>
-                        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+                        <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
                         <Navbar.Collapse id="responsive-navbar-nav">
                             <Nav className="mr-auto">
                                 {userContext.userAuthenticated ? null : (
@@ -402,6 +413,14 @@ function App() {
                                 </div>
                             )}
                         </Route>
+                        <Route path="/:locationId" >
+                            {isAuthenticated ? <OpenSundayMap/> : (
+                                <div>
+                                    <h1>Welcome to OpenSunday, please log in</h1>
+                                    <button onClick={handleLoginClick}>Login</button>
+                                </div>
+                            )}
+                        </Route>
                         <ProtectedRoute exact path="/UserForm" component={UserForm}/>
                         <ProtectedRoute exact path="/ManageLocation" component={ManageLocation}/>
                     </Switch>
@@ -410,4 +429,5 @@ function App() {
         </BrowserRouter>
     );
 }
+
 export default App;
