@@ -2,14 +2,11 @@ import React, {useContext, useEffect, useState} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 import request from "../utils/request";
 import endpoints from "../endpoints.json";
-import Table from "@material-ui/core/Table";
-import ReactDataGrid from 'react-data-grid';
-import {DataGrid, RowsProp, ColDef, SortDirection, ValueGetterParams, CellValue} from '@material-ui/data-grid';
+import {DataGrid} from '@material-ui/data-grid';
 import Button from "@material-ui/core/Button";
 import Modal from "react-bootstrap/Modal";
 import {Field, Form, Formik} from "formik";
 import {UserContext} from "../utils/UserContext";
-import {Redirect} from "react-router-dom";
 import * as Yup from "yup";
 
 const columns = [
@@ -32,8 +29,7 @@ const sortModel = [
     },
 ];
 
-export default function ManageLocations(props){
-    //let locations = props.location;
+export default function ManageLocations(){
     let [locations, setLocations] = useState([]);
     let [types, setTypes] = useState([]);
     let [cities, setCities] = useState([]);
@@ -48,8 +44,15 @@ export default function ManageLocations(props){
     let userContext = useContext(UserContext);
 
     useEffect(() => {
-        let fetchEverything = async(e) => {
-            await fetchLocations();
+        if(userContext.userAuthenticated === null){
+            return;
+        }
+        fetchLocations();
+    }, [userContext]);
+
+    useEffect(() => {
+        let fetchEverything = async() => {
+            //await fetchLocations();
             await fetchTypes();
             await fetchCities();
             await fetchCreator();
@@ -59,15 +62,23 @@ export default function ManageLocations(props){
     }, []);
 
     const initialValues = {
-        id_User: "",
         name: "",
         address: "",
         id_Type: "",
         url: "",
         id_City: "",
         lat: "",
-        lng: ""
+        lng: "",
+        id_User: ""
     };
+
+    let editedValues = {
+        name: "",
+        address: "",
+        id_Type: "",
+        url: "",
+        id_City: ""
+    }
 
     const addLocationSchema = Yup.object().shape({
         name: Yup.string()
@@ -89,32 +100,32 @@ export default function ManageLocations(props){
     })
 
     let {
-        getAccessTokenSilently,
-        user,
+        getAccessTokenSilently
     } = useAuth0();
 
-    let fetchLocations = async(e) => {
+    let fetchLocations = async() => {
         locations = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
             getAccessTokenSilently);
+        locations = locations.filter(location => location.id_User===userContext.userAuthenticated.id);
         setLocations(locations);
     }
 
-    let fetchTypes = async(e) => {
+    let fetchTypes = async() => {
         types = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.type}`, getAccessTokenSilently);
         setTypes(types);
     }
 
-    let fetchCities = async(e) => {
+    let fetchCities = async() => {
         cities = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently);
         setCities(cities);
     }
 
-    let fetchCreator = async(e) =>  {
+    let fetchCreator = async() =>  {
         creators = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently)
     }
 
     let updateLocation = async(path, token, updatedLocation) => {
-        let response = fetch(path, {
+        await fetch(path, {
             method: 'PUT',
             headers:{
                 Authorization: `Bearer ${token}`,
@@ -126,15 +137,15 @@ export default function ManageLocations(props){
         });
     };
 
-    let handleClose = () => {
+    let handleClose = async () => {
         setShowEditModal(false);
         setShowDelModal(false);
         setShowAddModal(false);
-        //window.location.reload(false);
+        await fetchLocations();
     }
 
     let handleEditClick = () => {
-        if(selection.length == 1){
+        if(selection.length === 1){
             setShowEditModal(true);
         }else{
             console.log("Please select only one location !")
@@ -146,33 +157,32 @@ export default function ManageLocations(props){
 
         let id = selection.map(part => part.id);
 
-        console.log(values);
-
-        let editedLocation = values[0];
-        if(values.name != null){
-            editedLocation["name"] = values.name;
+        //let editedLocation = values[0];
+        let editedLocation = editedValues;
+        editedLocation["id"] = parseInt(id);
+        if(editedLocation["id_Type"] === ""){
+            editedLocation["id_Type"] = parseInt(values[0].id_Type);
         }
-        if(values.address != null){
-            editedLocation["address"] = values.address;
+        if(editedLocation["id_City"] === ""){
+            editedLocation["id_City"] = parseInt(values[0].id_City);
         }
-        if(values.id_Type != null){
-            editedLocation["id_Type"] = values.id_Type.toString();
+        editedLocation["id_User"] = userContext.userAuthenticated.id;
+        if(editedLocation["name"] === ""){
+            editedLocation["name"] = values[0].name;
         }
-        if(values.url != null){
-            editedLocation["url"] = values.url;
+        if(editedLocation["address"] === ""){
+            editedLocation["address"] = values[0].address;
         }
-        if(values.id_City != null){
-            editedLocation["id_City"] = values.id_City.toString();
+        if(editedLocation["url"] === ""){
+            editedLocation["url"] = values[0].url;
         }
 
         editedLocation = JSON.stringify(editedLocation);
-        console.log(editedLocation);
 
         let path = process.env.REACT_APP_SERVER_URL + endpoints.location +"/"+id;
-
         let token = await getAccessTokenSilently();
         await updateLocation(path, token, editedLocation);
-        handleClose();
+        await handleClose();
     }
 
     let handleDeleteClick = () =>{
@@ -201,7 +211,7 @@ export default function ManageLocations(props){
             }
         });
         delMod = false;
-        handleClose();
+        await handleClose();
     }
 
     let handleAddClick = () => {
@@ -215,14 +225,19 @@ export default function ManageLocations(props){
 
         if(values.id_Type == ""){
             newLocation["id_Type"] = 1;
+        }else{
+            newLocation["id_Type"] = parseInt(values.id_Type);
         }
         if(values.id_City == ""){
             newLocation["id_City"] = 1;
+        }else {
+            newLocation["id_City"] = parseInt(values.id_City);
         }
 
         newLocation["id_User"] = userContext.userAuthenticated.id;
 
         newLocation = JSON.stringify(newLocation);
+
 
         let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
 
@@ -240,13 +255,22 @@ export default function ManageLocations(props){
         });
 
         addMod = false;
+        await handleClose();
+    }
 
-        handleClose();
+
+
+    let setFieldValue = (field, newValue) =>{
+        if(field==='id_Type' || field==='id_City'){
+            editedValues[field] = parseInt(newValue);
+        }else{
+            editedValues[field] = newValue;
+        }
     }
 
     return (
         <>
-            <h3>All Locations created by :</h3>
+            <h3>All Locations</h3>
             <p>
                 <Button onClick={handleAddClick}>Add a new Location</Button>
                 <Button onClick={handleEditClick}>Edit Selected Row</Button>
@@ -279,27 +303,35 @@ export default function ManageLocations(props){
                                 <Field
                                     type="text"
                                     name="name"
+                                    onChange={value => setFieldValue('name', value.target.value)}
                                     defaultValue={selection.map(part => part.name)}
                                 /><br/>
                                 <Field
                                     type="text"
                                     name="address"
+                                    onChange={value => setFieldValue('address', value.target.value)}
                                     defaultValue={selection.map(part => part.address)}
                                 /><br/>
-                                <Field as="select" name="id_Type">
+                                <Field as="select" name="id_Type"
+                                       onChange={value => setFieldValue('id_Type', value.target.value)}
+                                >
                                     {types.map(type =>
                                     <option value={type.id}>{type.description}</option>
                                     )}
+
                                 </Field><br/>
                                 <Field
                                     type="text"
                                     name="url"
+                                    onChange={value => setFieldValue('url', value.target.value)}
                                     defaultValue={selection.map(part => part.url)}
                                 /><br/>
-                                <Field as="select" name="id_City">
+                                <Field as="select" name="id_City" onChange={value => setFieldValue('id_City', value.target.value)}>
                                     {cities.map(city =>
                                     <option value={city.id}>{city.name}</option>
                                     )}
+
+
                                 </Field><br/><br/>
                                 <Button variant="contained" color="primary" type="submit">
                                     Edit
