@@ -41,11 +41,6 @@ function OpenMap(props) {
     const userContext = useContext(UserContext);
 
     //If the user doesnt come from an url/id
-    if (locations.length === 0) {
-        locations = request(
-            `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
-            getAccessTokenSilently)
-    }
 
     if (locationId === undefined) {
         locationId = null;
