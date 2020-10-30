@@ -15,7 +15,6 @@ class AppWrapper extends React.Component {
         };
     }
 
-
     setUserPosition = (userPosition) => {
         this.setState({
             userPosition: userPosition
