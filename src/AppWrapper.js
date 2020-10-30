@@ -6,12 +6,12 @@ import React from "react";
 
 
 class AppWrapper extends React.Component {
-    /* Initialize state with 2 null components */
+    /* Initialize state with 1 null components */
     constructor() {
         super();
         this.state = {
             userAuthenticated: null,
-            userPosition: [null, null]
+            userPosition: null
         };
     }
 

@@ -66,12 +66,11 @@ function OpenSundayMap() {
     }, []);
 
 
-
     return (
         <>
             <div className="map-container">
                 <div className="map-left">
-                    <OpenMap locations={locations} positionUser={userContext.userPosition} />
+                    <OpenMap locations={locations} positionUser={userContext.userPosition} cities={cities} />
                 </div>
 
                     <div className="locations-right">
@@ -182,9 +181,6 @@ function App() {
     if (loading) {
         return <Loading />;
     }
-
-
-
 
     return (
         <BrowserRouter>
