@@ -18,7 +18,9 @@ import postRequest from "../utils/postRequest";
 import * as Yup from 'yup';
 import IconButton from '@material-ui/core/IconButton';
 import CheckIcon from '@material-ui/icons/Check';
-import {useHistory} from "react-router-dom";
+import {useHistory, useParams} from "react-router-dom";
+import ReportModal from "./ReportModal";
+import AddLocationModal from "./AddLocationModal";
 
 
 export default function LocationsList(props) {
@@ -34,18 +36,38 @@ export default function LocationsList(props) {
     let [filteredFutureDates, setFilteredFutureDates] = useState(null);
     let [showSendRating, setShowSendRating] = useState(false);
     let [locationToShow, setLocationToShow] = useState(null);
+    let [disabledRating, setDisabledRating] = useState(false);
+
 
     const userContext = useContext(UserContext);
     const history = useHistory();
 
-    const reportingValidationSchema = Yup.object({
-        Comment: Yup.string().required()
-    });
+    let {locationId} = useParams();
 
+    const refs = locations.reduce((acc, value) => {
+        acc[value.id] = React.createRef();
+        return acc;
+    }, {});
+
+    const scrollToItem = id =>
+        refs[id].current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+        });
+
+    useEffect(() => {
+        if (locationId === undefined) {
+            return;
+        }
+        let locationSelected = locations.find(location => location.id === +locationId);
+        const event = new Event('onchange');
+        handleChange(event, locationSelected, true);
+        scrollToItem(locationSelected.id);
+    }, [locationId]);
 
 
     useEffect(() => {
-        if(locationToReport===null)
+        if (locationToReport === null)
             return;
 
         let filterPastDates = () => {
@@ -61,7 +83,7 @@ export default function LocationsList(props) {
             //console.log("2pastdates :"+pastDates);
             if (pastDates.length !== 0) {
                 pastDates.sort((a, b) => {
-                    return a - b;
+                    return new Date(b.selected_Date) - new Date(a.selected_Date);
                 });
                 setFilteredPastDates(pastDates);
                 filteredPastDates = pastDates;
@@ -73,14 +95,15 @@ export default function LocationsList(props) {
         filterPastDates();
 
         if (filteredPastDates === null) {
+            handleClose();
             alert("A report for this location is not possible");
         } else {
             setShowReportModal(true);
         }
     }, [locationToReport]);
 
-    useEffect(()=>{
-        if(locationPerDate===null)
+    useEffect(() => {
+        if (locationPerDate === null)
             return;
         let filterFutureDates = () => {
             let futureDates = [];
@@ -95,7 +118,7 @@ export default function LocationsList(props) {
             //console.log("2futuredates :" + futureDates);
             if (futureDates !== null) {
                 futureDates.sort((a, b) => {
-                    return a + b;
+                    return new Date(a.selected_Date) - new Date(b.selected_Date);
                 });
                 setFilteredFutureDates(futureDates);
                 //console.log("3filteredFutureDates : " + filteredFutureDates);
@@ -110,6 +133,17 @@ export default function LocationsList(props) {
         setRating(newRate);
         setShowSendRating(true);
     }
+
+    let getRatingByUser = async (locationToShowId, userId) => {
+        let response = await request(
+            `${process.env.REACT_APP_SERVER_URL}${endpoints.rating}/${locationToShowId}/${userId}`,
+            getAccessTokenSilently);
+        if (response === 404)
+            return;
+        setRating(response.rate);
+        setDisabledRating(true);
+    };
+
     const handleSendRating = async (event) => {
         event.preventDefault();
         const rateToPost = {
@@ -126,7 +160,9 @@ export default function LocationsList(props) {
         }
 
         setShowSendRating(false);
+        setDisabledRating(false);
         await getAverageRatingForLocation(locationToShow.id);
+        await getRatingByUser(locationToShow.id, userContext.userAuthenticated.id);
         return alert("Your rating has successfully been transmitted. Thank you !");
     }
 
@@ -162,19 +198,25 @@ export default function LocationsList(props) {
         event.preventDefault();
         setShowSendRating(false);
         setRating(null);
+        setDisabledRating(false);
 
         async function fetchLocation_per_Date() {
             await getLocation_per_Date(loc.id);
             await getAverageRatingForLocation(loc.id);
+            if(userContext.userAuthenticated !== null){
+                await getRatingByUser(loc.id, userContext.userAuthenticated.id);
+            }
+
         }
 
         if (isExpanded) {
             fetchLocation_per_Date().catch();
             setLocationToShow(loc);
-            history.push("/"+loc.id);
+            history.push("/location/" + loc.id);
         } else {
             setFilteredFutureDates(null);
             filteredFutureDates = null;
+            setLocationToReport(null);
             setLocationToShow(null);
         }
         setExpanded(isExpanded ? loc.id : false);
@@ -189,32 +231,12 @@ export default function LocationsList(props) {
         setLocationToReport(loc);
 
     };
-    const handleReportSubmit = async (report) => {
-        report.Report_Date = new Date().toISOString();
-        console.log('report to post', report)
-
-        let response = await postRequest(
-            `${process.env.REACT_APP_SERVER_URL}${endpoints.reporting}`,
-            getAccessTokenSilently, JSON.stringify(report));
-
-        if (response === 409) {
-            handleClose();
-            return alert("You already reported something for this location and this date! Please choose another date.");
-        }
-
-        console.log("Successfully added this new report: " + report);
-        handleClose();
-        return alert("Your report has successfully been transmitted. Thank you !");
-    }
-
-
-
 
 
     return (
         <>
-            {locations.map((loc, index) => (
-                <Accordion key={index} expanded={expanded === loc.id}
+            {locations.map((loc) => (
+                <Accordion key={loc.id} ref={refs[loc.id]} expanded={expanded === loc.id}
                            onChange={(event, isExpanded) => handleChange(event, loc, isExpanded)}>
                     <AccordionSummary
                         expandIcon={<ExpandMoreIcon/>}
@@ -259,25 +281,41 @@ export default function LocationsList(props) {
                             <p>
                                 {loc.city.code} {loc.city.name}
                             </p>
+                            <table style={{alignContent: "center"}}>
+                                <tbody>
+                                <tr>
+                                    <td style={{verticalAlign:"middle", color: "#ffb400"}}>
+                                        {average != null ? (<>{average.average} ({average.nbRatings})</>) : null}
+                                    </td>
+                                    <td >
+                                        <div style={{display:"table-cell", verticalAlign:"bottom"}}>
+                                            <Rating
+                                                name="ratings"
+                                                defaultValue={0}
+                                                value={rating}
+                                                max={5}
+                                                onChange={handleRatingChange}
+                                                disabled={disabledRating}
+                                            />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {showSendRating ?
+                                            <IconButton size="small" aria-label="Send my rating"
+                                                        onClick={handleSendRating}>
+                                                <CheckIcon style={{color: "green"}}/>
+                                            </IconButton> : null}
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
 
-                            <div style={{verticalAlign: "middle"}}>
-                                {average != null ? (<div><p>{average.average} ({average.nbRatings})</p></div>) : null}
-                                <Box component="fieldset" mb={3} borderColor="transparent"
-                                     style={{display: "inline-block"}}>
-                                    <Rating
-                                        name="customized-empty"
-                                        defaultValue={0}
-                                        value={rating}
-                                        onChange={handleRatingChange}
-                                    />
-                                    {showSendRating ?
-                                        <IconButton size="small" aria-label="Send my rating" onClick={handleSendRating}>
-                                            <CheckIcon style={{color:"green"}} />
-                                        </IconButton>:null}
-
-                                </Box>
-
+                            <div>
+                                <a href={loc.url}>
+                                    See website
+                                </a>
                             </div>
+
 
                             <Link to="#" onClick={(event) => handleReportClick(event, loc)}>
                                 Report
@@ -289,74 +327,14 @@ export default function LocationsList(props) {
                     </AccordionDetails>
                 </Accordion>
             ))}
-            {locationToReport == null ? null : (
-                <Formik
-                    initialValues={{
-                        Id_Location: locationToReport.id,
-                        Id_User: userContext.userAuthenticated.id,
-                        Report_Date: null,
-                        Comment: "",
-                        Id_Date: null
-                    }}
-                    onSubmit={(values) => handleReportSubmit(values)}
-                    validationSchema={reportingValidationSchema}>
-                    {({
-                          handleChange,
-                          handleBlur,
-                          handleSubmit,
-                          values,
-                          touched,
-                          isValid,
-                          errors
-                      }) => (
-                        <Modal show={showReportModal} onHide={handleClose}>
-                            <Modal.Header closeButton>
-                                <Modal.Title>Report : {locationToReport.name}</Modal.Title>
-                            </Modal.Header>
-                            <Modal.Body>
-                                <Form>
-                                    <Form.Label>
-                                        When went you to {locationToReport.name} ?
-                                    </Form.Label>
-                                    <Form.Control as="select" onChange={handleChange("Id_Date")}>
-                                        {filteredPastDates === null ? (
-                                            <option/>) : filteredPastDates.map((pastDate, index) => (
-                                            <option key={index} value={pastDate.id}
-                                                    label={formatDate(pastDate.selected_Date)}>
-                                                {values.Id_Date === null ? values.Id_Date = pastDate.id : null}
-                                            </option>
-                                        ))
-                                        }
-                                    </Form.Control>
-                                    <Form.Label>
-                                        Comment
-                                    </Form.Label>
-                                    <Form.Control
-                                        as="textarea"
-                                        onChange={handleChange('Comment')}
-                                        onBlur={handleBlur('Comment')}
-                                        value={values.comment}
-                                        isInvalid={!!errors.Comment}
-                                        placeholder="What do you want to report ? (Ex: The restaurant was closed...)"/>
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.Comment}
-                                    </Form.Control.Feedback>
-                                </Form>
-
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <Button variant="contained" color="secondary" onClick={handleClose}
-                                        style={{marginRight: "0.2em"}}>
-                                    Close
-                                </Button>
-                                <Button variant="contained" color="primary" onClick={handleSubmit}>
-                                    Send Report
-                                </Button>
-                            </Modal.Footer>
-                        </Modal>
-                    )}
-                </Formik>
-            )}
+            {showReportModal ? (
+                <ReportModal showReportModal={showReportModal}
+                             handleClose={handleClose}
+                             locationToReport={locationToReport}
+                             formatDate={formatDate}
+                             filteredPastDate={filteredPastDates}
+                />
+            ) : null }
 
         </>
 

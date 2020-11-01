@@ -18,14 +18,14 @@
   color: white;
 }
 .App-body {
-  background-color: #282c34;
+  background-color: #efeaea;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: black;
 }
 
 .App-link {
@@ -78,7 +78,7 @@ hr{
 }
 
 .map-left{
-  background: chocolate;
+  background: #efeaea;
   width: 75%;
   max-height: 100vh;
 }
@@ -107,6 +107,19 @@ hr{
 
 .ManageLocation{
   display:flex;
+}
+
+.navLinks{
+  color: #aeaeae;
+  text-decoration: none;
+}
+.navLinks:hover{
+  color: #cccccc;
+  text-decoration: none;
+}
+.navLinks:active{
+  color: white;
+  text-decoration: none;
 }
 
 

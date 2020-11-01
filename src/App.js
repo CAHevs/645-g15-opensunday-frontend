@@ -4,7 +4,7 @@ import {useAuth0} from "@auth0/auth0-react";
 import request from "./utils/request";
 import endpoints from "./endpoints";
 import Loading from "./components/Loading";
-import {BrowserRouter, Link, Switch, Route, Redirect, useHistory, useParams} from "react-router-dom";
+import {BrowserRouter, Link, Switch, Route, Redirect, useHistory, useParams, NavLink} from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import MaterialCore from '@material-ui/core';
@@ -14,7 +14,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ProtectedRoute from "./components/ProtectedRoute";
 import {Navbar, Nav, NavDropdown} from 'react-bootstrap';
 import OpenMap from "./pages/OpenMap";
-import UserForm from "./UserForm";
+import UserForm from "./components/UserForm";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import LocationsList from "./components/LocationsList";
 import SimpleBar from 'simplebar-react';
@@ -25,6 +25,9 @@ import Modal from "react-bootstrap/Modal";
 import {Field, Form, Formik} from "formik";
 import * as Yup from "yup";
 import ManageLocation from "./pages/ManageLocation";
+import AddLocationModal from "./components/AddLocationModal";
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Skeleton from "@material-ui/lab/Skeleton";
 
 
 function OpenSundayMap() {
@@ -33,39 +36,19 @@ function OpenSundayMap() {
     let [selectedCity, setselectedCity] = useState(null);
     let [locations, setLocations] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
+    let [showAddModal, setShowAddModal] = useState(false);
+
     const userContext = useContext(UserContext);
     let history = useHistory();
+
     let {
         getAccessTokenSilently,
-        user,
     } = useAuth0();
 
     useEffect(() => {
         if (userContext.userAuthenticated === "notFound")
             history.push("/UserForm")
-    }, [userContext.userAuthenticated])
-
-    useEffect(() => {
-        let getAllCities = async (e) => {
-            let cities = await request(
-                `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
-                getAccessTokenSilently
-            );
-            setCities(cities);
-        }
-
-        let getAllTypes = async (e) => {
-            let types = await request(
-                `${process.env.REACT_APP_SERVER_URL}${endpoints.type}`,
-                getAccessTokenSilently
-            );
-            setTypes(types);
-        }
-
-        getAllCities().catch();
-        getAllTypes().catch();
-
-    }, []);
+    }, [userContext.userAuthenticated]);
 
     useEffect(() => {
         async function fetchLocation() {
@@ -77,136 +60,35 @@ function OpenSundayMap() {
             setIsLoaded(true);
         }
 
+        let getAllCities = async (e) => {
+            let cities = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
+                getAccessTokenSilently
+            );
+            setCities(cities);
+        }
+        getAllCities().catch();
         fetchLocation().catch();
     }, []);
 
-    /* Add Location and edit isCreator for the user */
-    let [types, setTypes] = useState([]);
-    const initialValues = {
-        name: "",
-        address: "",
-        id_Type: "",
-        url: "",
-        id_City: "",
-        lat: "",
-        lng: "",
-        id_User: ""
-    };
-    const [showAddModal, setShowAddModal] = useState(false);
-    const addLocationSchema = Yup.object().shape({
-        name: Yup.string()
-            .min(2, 'Too Short')
-            .max(50, 'Too Long')
-            .required('Required'),
-        address: Yup.string()
-            .min(2, 'Too Short')
-            .max(50, 'Too Long')
-            .required('Required'),
-        url: Yup.string()
-            .min(5, 'Too Short')
-            .max(250, 'Too Long')
-            .required('Required'),
-        lat: Yup.number()
-            .required('Required'),
-        lng: Yup.number()
-            .required('Required')
-    })
-    let fetchLocations = async() => {
-        locations = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
-            getAccessTokenSilently);
-        setLocations(locations);
-    }
-
     let handleClose = async () => {
         setShowAddModal(false);
-        await fetchLocations();
     }
+
 
     let handleAddClick = () => {
         setShowAddModal(true);
-    }
-
-    let handleAddSubmit = async(values) => {
-
-        let newLocation = values;
-
-        if(values.id_Type == ""){
-            newLocation["id_Type"] = 1;
-        }else{
-            newLocation["id_Type"] = parseInt(values.id_Type);
-        }
-        if(values.id_City == ""){
-            newLocation["id_City"] = 1;
-        }else {
-            newLocation["id_City"] = parseInt(values.id_City);
-        }
-
-        newLocation["id_User"] = userContext.userAuthenticated.id;
-
-        newLocation = JSON.stringify(newLocation);
-
-
-        let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
-
-        let token = await getAccessTokenSilently();
-
-        let response = await fetch(path, {
-            method: 'POST',
-            headers:{
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-                'Content-Type': "application/json",
-
-            },
-            body: newLocation,
-        });
-
-        /*update isCreator for the user if not already isCreator*/
-        if(userContext.userAuthenticated.isCreator === false){
-            let currentUser = {};
-            currentUser["id"] = userContext.userAuthenticated.id;
-            currentUser["firstname"] = userContext.userAuthenticated.firstname;
-            currentUser["lastname"] = userContext.userAuthenticated.lastname;
-            currentUser["email"] = userContext.userAuthenticated.email;
-            currentUser["phone"] = userContext.userAuthenticated.phone;
-            currentUser["isCreator"] = true;
-            currentUser["isBlocked"] = false;
-            currentUser["ref_Auth"] = userContext.userAuthenticated.ref_auth;
-
-            console.log(currentUser);
-
-            let path = process.env.REACT_APP_SERVER_URL + endpoints.user + "/" + userContext.userAuthenticated.id;
-
-            let token = await getAccessTokenSilently();
-
-            let response = await fetch(path, {
-                method: 'PUT',
-                headers:{
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                    'Content-Type': "application/json",
-
-                },
-                body: currentUser,
-            });
-        }
-        await handleClose();
     }
 
     return (
         <>
             <div className="map-container">
                 <div className="map-left">
-                    {locations.length === 0 ? null
+                    {locations.length === 0 ? <Skeleton variant="rect" style={{height: "100vh", width: "100%"}} />
                     : <OpenMap locations={locations}
                                cities={cities}
                                positionUser={userContext.userPosition}
-                            /*location={locationId === null ? null : locations.find(location => location.id === +locationId)}*/
-
                         />}
-
-
-                    <OpenMap locations={locations} positionUser={userContext.userPosition} />
                 </div>
 
                 <div className="locations-right">
@@ -218,90 +100,14 @@ function OpenSundayMap() {
                 </div>
             </div>
 
-            <Modal show={showAddModal} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add new location</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Formik initialValues={initialValues}
-                            validationSchema={addLocationSchema}
-                            onSubmit={values => (handleAddSubmit(values))}
-                    >
-                        {({errors, touched}) => (
-                            <Form>
-                                <Field
-                                    type="text"
-                                    name="name"
-                                    placeholder="Location name"
-                                />
-                                {errors.name && touched.name ? (
-                                    <div>{errors.name}</div>
-                                ): null}
-                                <br/>
-                                <Field
-                                    type="text"
-                                    name="address"
-                                    placeholder="Address"
-                                />
-                                {errors.address && touched.address ? (
-                                    <div>{errors.address}</div>
-                                ): null}
-                                <br/>
-                                <Field as="select" name="id_Type">
-                                    {types.map(type =>
-                                        <option value={type.id}>{type.description}</option>
-                                    )}
-                                </Field>
-                                <br/>
-                                <Field
-                                    type="text"
-                                    name="url"
-                                    placeholder="Url"
-                                />
-                                {errors.url && touched.url ? (
-                                    <div>{errors.url}</div>
-                                ): null}
-                                <br/>
-                                <Field
-                                    type="number"
-                                    name="lat"
-                                    placeholder="Lat"
-                                />
-                                {errors.lat && touched.lat ? (
-                                    <div>{errors.lat}</div>
-                                ): null}
-                                <br/>
-                                <Field
-                                    type="number"
-                                    name="lng"
-                                    placeholder="Lng"
-                                />
-                                {errors.lng && touched.lng ? (
-                                    <div>{errors.lng}</div>
-                                ): null}
-                                <br/>
-                                <Field as="select" name="id_City">
-                                    {cities.map(city =>
-                                        <option value={city.id}>{city.name}</option>
-                                    )}
-                                </Field><br/>
-                                <button type="submit" >Create</button>
-                            </Form>
-                        )}
-
-                    </Formik>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="contained" color="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            {showAddModal ? <AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/> : null}
         </>
     );
 }
 
 function App() {
+
+    let [currentUser, setCurrentUser] = useState(null);
 
     //Authentification with Auth0
     let {
@@ -313,7 +119,7 @@ function App() {
         user
     } = useAuth0();
 
-    let [isCreator, setisCreator] = useState(false);
+    let [isCreator, setIsCreator] = useState(false);
 
     let userContext = useContext(UserContext);
 
@@ -321,9 +127,11 @@ function App() {
         if(userContext.userAuthenticated === null) {
             return;
         }
+
         if(userContext.userAuthenticated.isCreator){
-            setisCreator(true);
+            setIsCreator(true);
         }
+        setCurrentUser(userContext.userAuthenticated);
     }, [userContext])
 
     useEffect(() => {
@@ -349,6 +157,7 @@ function App() {
 
 
 
+
     //Login button with authentification
     let handleLoginClick = async (e) => {
         e.preventDefault();
@@ -367,25 +176,26 @@ function App() {
 
 
     return (
+
         <BrowserRouter>
             <div className="App">
                 <header>
                     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-                        <Navbar.Brand href="/">Home Sunday</Navbar.Brand>
+                        <Navbar.Brand href="/">OpenSunday</Navbar.Brand>
                         <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
                         <Navbar.Collapse id="responsive-navbar-nav">
                             <Nav className="mr-auto">
                                 {userContext.userAuthenticated ? null : (
-                                    <Nav.Link href="UserForm">Register</Nav.Link>
+                                    <NavLink to="/UserForm" className="navLinks">Register</NavLink>
                                 )}
                                 {isCreator ? (
-                                    <Nav.Link href="ManageLocation">Manage Locations</Nav.Link>
+                                    <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
                                 ) : null }
                             </Nav>
                             {isAuthenticated ? (
                                     /*If the user is authenticated*/
                                     <a
-                                        className="App-link Logout-link"
+                                        className="App-link Logout-link navLinks"
                                         href="#"
                                         onClick={handleLogoutClick}
                                     >Logout
@@ -409,15 +219,15 @@ function App() {
                             {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
-                                    <button onClick={handleLoginClick}>Login</button>
+                                    <Button  variant="contained" color="primary" onClick={handleLoginClick}>Login</Button>
                                 </div>
                             )}
                         </Route>
-                        <Route path="/:locationId" >
+                        <Route exact path="/location/:locationId" >
                             {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
-                                    <button onClick={handleLoginClick}>Login</button>
+                                    <Button  variant="contained" color="primary" onClick={handleLoginClick}>Login</Button>
                                 </div>
                             )}
                         </Route>

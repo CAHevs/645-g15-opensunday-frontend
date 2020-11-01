@@ -19,7 +19,7 @@ export default async function (url, getAccessTokenSilently) {
       return response.status;
     }
   } catch (e) {
-    console.error(e);
+    //console.error(e);
     return null;
 
   }

@@ -8,6 +8,8 @@ import Modal from "react-bootstrap/Modal";
 import {Field, Form, Formik} from "formik";
 import {UserContext} from "../utils/UserContext";
 import * as Yup from "yup";
+import AddLocationModal from "../components/AddLocationModal";
+import DefineDatesModal from "../components/DefineDatesModal";
 
 const columns = [
     {field: 'id', headerName: 'ID'},
@@ -35,9 +37,11 @@ export default function ManageLocations(){
     let [cities, setCities] = useState([]);
     let [creators, setCreators] = useState([]);
     let [selection, setSelection] = useState([]);
+    let [locationToDefineDates, setLocationToDefineDates] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDelModal, setShowDelModal] = useState(false);
+    const [showDefineDatesModal, setShowDefineDatesModal] = useState(false);
     let delMod = false;
     let addMod = false;
 
@@ -47,7 +51,7 @@ export default function ManageLocations(){
         if(userContext.userAuthenticated === null){
             return;
         }
-        fetchLocations();
+        fetchLocations().catch();
     }, [userContext]);
 
     useEffect(() => {
@@ -58,19 +62,8 @@ export default function ManageLocations(){
             await fetchCreator();
         }
 
-        fetchEverything();
+        fetchEverything().catch();
     }, []);
-
-    const initialValues = {
-        name: "",
-        address: "",
-        id_Type: "",
-        url: "",
-        id_City: "",
-        lat: "",
-        lng: "",
-        id_User: ""
-    };
 
     let editedValues = {
         name: "",
@@ -80,24 +73,6 @@ export default function ManageLocations(){
         id_City: ""
     }
 
-    const addLocationSchema = Yup.object().shape({
-        name: Yup.string()
-            .min(2, 'Too Short')
-            .max(50, 'Too Long')
-            .required('Required'),
-        address: Yup.string()
-            .min(2, 'Too Short')
-            .max(50, 'Too Long')
-            .required('Required'),
-        url: Yup.string()
-            .min(5, 'Too Short')
-            .max(250, 'Too Long')
-            .required('Required'),
-        lat: Yup.number()
-            .required('Required'),
-        lng: Yup.number()
-            .required('Required')
-    })
 
     let {
         getAccessTokenSilently
@@ -141,6 +116,7 @@ export default function ManageLocations(){
         setShowEditModal(false);
         setShowDelModal(false);
         setShowAddModal(false);
+        setShowDefineDatesModal(false);
         await fetchLocations();
     }
 
@@ -148,7 +124,16 @@ export default function ManageLocations(){
         if(selection.length === 1){
             setShowEditModal(true);
         }else{
-            console.log("Please select only one location !")
+            alert("Please select one location !")
+        }
+
+    }
+    let handleDefineDates = () => {
+        if(selection.length === 1){
+            setLocationToDefineDates(selection[0]);
+            setShowDefineDatesModal(true);
+        }else{
+            alert("Please select one location !")
         }
 
     }
@@ -190,7 +175,7 @@ export default function ManageLocations(){
             delMod = true;
             setShowDelModal(true);
         }else{
-            console.log("Please select only 1 row !");
+            alert("Please select one location !");
         }
 
     }
@@ -219,47 +204,6 @@ export default function ManageLocations(){
         setShowAddModal(true);
     }
 
-    let handleAddSubmit = async(values) => {
-
-        let newLocation = values;
-
-        if(values.id_Type == ""){
-            newLocation["id_Type"] = 1;
-        }else{
-            newLocation["id_Type"] = parseInt(values.id_Type);
-        }
-        if(values.id_City == ""){
-            newLocation["id_City"] = 1;
-        }else {
-            newLocation["id_City"] = parseInt(values.id_City);
-        }
-
-        newLocation["id_User"] = userContext.userAuthenticated.id;
-
-        newLocation = JSON.stringify(newLocation);
-
-
-        let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
-
-        let token = await getAccessTokenSilently();
-
-        let response = await fetch(path, {
-            method: 'POST',
-            headers:{
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-                'Content-Type': "application/json",
-
-            },
-            body: newLocation,
-        });
-
-        addMod = false;
-        await handleClose();
-    }
-
-
-
     let setFieldValue = (field, newValue) =>{
         if(field==='id_Type' || field==='id_City'){
             editedValues[field] = parseInt(newValue);
@@ -270,11 +214,12 @@ export default function ManageLocations(){
 
     return (
         <>
-            <h3>All Locations</h3>
+            <h3 style={{color:"black"}}>All Locations</h3>
             <p>
-                <Button onClick={handleAddClick}>Add a new Location</Button>
-                <Button onClick={handleEditClick}>Edit Selected Row</Button>
-                <Button onClick={handleDeleteClick}>Delete Selected Row</Button>
+                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleAddClick}>Add a new Location</Button>
+                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleEditClick}>Edit Selected Row</Button>
+                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleDefineDates}>Define Opened Dates</Button>
+                <Button variant="contained" color="secondary" style={{margin:"1em"}} onClick={handleDeleteClick}>Delete Selected Row</Button>
             </p>
             <div  style={{ height: 500, width: '90%' }}>
                 <DataGrid
@@ -316,7 +261,7 @@ export default function ManageLocations(){
                                        onChange={value => setFieldValue('id_Type', value.target.value)}
                                 >
                                     {types.map(type =>
-                                    <option value={type.id}>{type.description}</option>
+                                    <option key={type.id} value={type.id}>{type.description}</option>
                                     )}
 
                                 </Field><br/>
@@ -328,7 +273,7 @@ export default function ManageLocations(){
                                 /><br/>
                                 <Field as="select" name="id_City" onChange={value => setFieldValue('id_City', value.target.value)}>
                                     {cities.map(city =>
-                                    <option value={city.id}>{city.name}</option>
+                                    <option key={city.id} value={city.id}>{city.name}</option>
                                     )}
 
 
@@ -346,7 +291,7 @@ export default function ManageLocations(){
                     </Modal.Footer>
                 </Modal>
             )}
-            {delMod == true ? false : (
+            {delMod === true ? false : (
                 <Modal show={showDelModal} onHide={handleClose}>
                     <Modal.Header closeButton>
                         <Modal.Title>Delete location : {selection.map(part => part.name)}</Modal.Title>
@@ -363,87 +308,8 @@ export default function ManageLocations(){
                     </Modal.Footer>
                 </Modal>
             )}
-            {addMod == true ? false: (
-                <Modal show={showAddModal} onHide={handleClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Add new location</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Formik initialValues={initialValues}
-                                validationSchema={addLocationSchema}
-                                onSubmit={values => (handleAddSubmit(values))}
-                        >
-                            {({errors, touched}) => (
-                                <Form>
-                                    <Field
-                                        type="text"
-                                        name="name"
-                                        placeholder="Location name"
-                                    />
-                                    {errors.name && touched.name ? (
-                                        <div>{errors.name}</div>
-                                    ): null}
-                                    <br/>
-                                    <Field
-                                        type="text"
-                                        name="address"
-                                        placeholder="Address"
-                                    />
-                                    {errors.address && touched.address ? (
-                                        <div>{errors.address}</div>
-                                    ): null}
-                                    <br/>
-                                    <Field as="select" name="id_Type">
-                                        {types.map(type =>
-                                            <option value={type.id}>{type.description}</option>
-                                        )}
-                                    </Field>
-                                    <br/>
-                                    <Field
-                                        type="text"
-                                        name="url"
-                                        placeholder="Url"
-                                    />
-                                    {errors.url && touched.url ? (
-                                        <div>{errors.url}</div>
-                                    ): null}
-                                    <br/>
-                                    <Field
-                                        type="number"
-                                        name="lat"
-                                        placeholder="Lat"
-                                    />
-                                    {errors.lat && touched.lat ? (
-                                        <div>{errors.lat}</div>
-                                    ): null}
-                                    <br/>
-                                    <Field
-                                        type="number"
-                                        name="lng"
-                                        placeholder="Lng"
-                                    />
-                                    {errors.lng && touched.lng ? (
-                                        <div>{errors.lng}</div>
-                                    ): null}
-                                    <br/>
-                                    <Field as="select" name="id_City">
-                                        {cities.map(city =>
-                                            <option value={city.id}>{city.name}</option>
-                                        )}
-                                    </Field><br/>
-                                    <button type="submit" >Create</button>
-                                </Form>
-                            )}
-
-                        </Formik>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="contained" color="secondary" onClick={handleClose}>
-                            Close
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            )}
+            {addMod === true ? false: (<AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/>)}
+            {showDefineDatesModal ? <DefineDatesModal showDefineDatesModal={showDefineDatesModal} handleClose={handleClose} location={locationToDefineDates}/> : null}
         </>
     )
 }
