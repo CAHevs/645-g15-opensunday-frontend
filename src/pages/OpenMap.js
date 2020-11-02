@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import logo from '../logo.svg';
 import L from 'leaflet';
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet';
-import redPin from '../assets/redPin.png';
-import leafShadow from '../assets/leaf-shadow.png';
+import redIcon from '../components/Popup';
+import Restaurant from '../components/Popup';
 import { UserContext } from "../utils/UserContext"
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from "@material-ui/core/TextField";
@@ -90,17 +90,6 @@ function OpenMap(props) {
         }
     }
 
-    let redIcon = L.icon({
-        iconUrl: redPin,
-        shadowUrl: leafShadow,
-        iconSize: [38, 95], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76]
-    });
-
-
     //useEffect to set the center of the map
     useEffect(() => {
         locationId === null ? (
@@ -110,7 +99,6 @@ function OpenMap(props) {
         ) ://if an id is selected, the map's center is on this locations id
             setmapCenter([location.lat, location.lng])
     }, [locationId]);
-
 
     return (
         <>
@@ -143,6 +131,9 @@ function OpenMap(props) {
                         //Get latitude and longitude from each location and display it in a Marker on the map
                         <Marker key={`marker-${index}`} position={[loc.lat, loc.lng]}
 
+                            // icon={loc.type.description}
+                            icon={new redIcon()}
+
                             //Change the url with location id by clicking
                             onClick={(event) => handleClick(event, loc)}
                         >
@@ -151,7 +142,7 @@ function OpenMap(props) {
                                     {loc.name} <br /> {loc.type.description} <br />
                                     <EmailIcon size={25} round={true}> </EmailIcon>
                                     <a className="video-email_button button-hover"
-                                        href={"mailto:?subject=I wanted you to see this site&body=Check out this link " + loc.url}
+                                        href={"mailto:?subject=I wanted you to see this site&body=Check out this link: https://grp15.p645.hevs.ch/location/" + loc.id}
                                         title="Share viaEmail">
                                         <span className="video-email_button-text">Share me</span>
                                     </a>
