@@ -121,5 +121,17 @@ hr{
   color: white;
   text-decoration: none;
 }
+.homeLinks{
+  color: white;
+  text-decoration: none;
+}
+.homeLinks:hover{
+  color: #aeaeae;
+  text-decoration: none;
+}
+.homeLinks:active{
+  color: #cccccc;
+  text-decoration: none;
+}
 
 

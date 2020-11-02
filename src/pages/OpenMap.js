@@ -28,6 +28,7 @@ function OpenMap(props) {
         user,
     } = useAuth0();
 
+    let [selectedCity, setSelectedCity] = useState(null);
     let [mapCenter, setmapCenter] = useState([46.2333, 7.35])
 
     //Get all the cities from OpenSundayMap()
@@ -80,7 +81,7 @@ function OpenMap(props) {
     }, [userContext.userPosition]);
 
 
-    //Button find me 
+    //Button find me
     const handleLocateMe = () => {
         if (userContext.userPosition === null || userContext.userPosition === "notAllowed") {
             console.log("location nulle du user :" + userContext.userPosition)
@@ -89,6 +90,25 @@ function OpenMap(props) {
             setmapCenter(userContext.userPosition);
         }
     }
+
+    let setCityChoosed = props.setCityChoosed;
+
+    const handleCitySubmit = async (event, value) => {
+        //Define search text with city code and the city name
+        const searchText = value.code + " " + value.name;
+
+        //Retrieve the lat and lng of the city choosed with an Map Box api
+        let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`;
+        let response = await fetch(url, {});
+        let data = await response.json();
+        if(data.features !== null || data.features[0] !== undefined){
+            setmapCenter([data.features[0].center[1],data.features[0].center[0]]);
+        }
+
+        //Define the city choosed with the method given in props to filter the list of locations
+        //setCityChoosed(value);
+    }
+
 
     let redIcon = L.icon({
         iconUrl: redPin,
@@ -124,9 +144,9 @@ function OpenMap(props) {
                         id="combo-box"
                         options={cities}
                         getOptionLabel={(city) => city.name}
-                        style={{ width: 300, margin: "1%", }}
-                        // onChange={(value)=>setselectedCity(value)}
-                        renderInput={(params) => <TextField {...params} label="City" variant="outlined" style={{ backgroundColor: "white", borderRadius: "6px" }} />}
+                        style={{width: 300, margin: "1%",}}
+                        onChange={(event, value)=>handleCitySubmit(event, value)}
+                        renderInput={(params) => <TextField {...params} label="City" variant="outlined" style={{backgroundColor: "white", borderRadius: "6px"}}/>}
                     />
                 </Control>
                 {userContext.userPosition === null || userContext.userPosition === "notAllowed" ? null : (
