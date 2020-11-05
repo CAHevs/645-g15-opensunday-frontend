@@ -94,6 +94,8 @@ function OpenMap(props) {
 
     //By default, the center of the map is at Sion, Valais
     let [mapCenter, setmapCenter] = useState([46.2333, 7.35]);
+    let [selectedCity, setSelectedCity] = useState(null);
+    let [mapCenter, setmapCenter] = useState([46.2333, 7.35])
 
     const [openMarker, setOpenMarker] = useState(false);
     //Get all the cities from OpenSundayMap()
@@ -149,6 +151,8 @@ function OpenMap(props) {
     }, [userContext.userPosition]);
 
     //method find me: set the  map's center and clean the url
+
+    //Button find me
     const handleLocateMe = () => {
         if (userContext.userPosition === null || userContext.userPosition === "notAllowed") {
             alert("We couldn't locate you :( Can you refresh the page ?")
@@ -159,6 +163,37 @@ function OpenMap(props) {
     }
 
     //useEffect to set the center of the map linked to the user or the id
+    let setCityChoosed = props.setCityChoosed;
+
+    const handleCitySubmit = async (event, value) => {
+        //Define search text with city code and the city name
+        const searchText = value.code + " " + value.name;
+
+        //Retrieve the lat and lng of the city choosed with an Map Box api
+        let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`;
+        let response = await fetch(url, {});
+        let data = await response.json();
+        if(data.features !== null || data.features[0] !== undefined){
+            setmapCenter([data.features[0].center[1],data.features[0].center[0]]);
+        }
+
+        //Define the city choosed with the method given in props to filter the list of locations
+        //setCityChoosed(value);
+    }
+
+
+    let redIcon = L.icon({
+        iconUrl: redPin,
+        shadowUrl: leafShadow,
+        iconSize: [38, 95], // size of the icon
+        shadowSize: [50, 64], // size of the shadow
+        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+        shadowAnchor: [4, 62],  // the same for the shadow
+        popupAnchor: [-3, -76]
+    });
+
+
+    //useEffect to set the center of the map
     useEffect(() => {
         locationId === null ? (
             //if the user doesn't give his location, the map's center is by default at Sion, Valais
@@ -180,9 +215,9 @@ function OpenMap(props) {
                         id="combo-box"
                         options={cities}
                         getOptionLabel={(city) => city.name}
-                        style={{ width: 300, margin: "1%", }}
-                        // onChange={(value)=>setselectedCity(value)}
-                        renderInput={(params) => <TextField {...params} label="City" variant="outlined" style={{ backgroundColor: "white", borderRadius: "6px" }} />}
+                        style={{width: 300, margin: "1%",}}
+                        onChange={(event, value)=>handleCitySubmit(event, value)}
+                        renderInput={(params) => <TextField {...params} label="City" variant="outlined" style={{backgroundColor: "white", borderRadius: "6px"}}/>}
                     />
                 </Control>
                 {/* Display the button FindMe if the user authorizes it*/}
