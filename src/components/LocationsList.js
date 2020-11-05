@@ -62,7 +62,7 @@ export default function LocationsList(props) {
         let locationSelected = locations.find(location => location.id === +locationId);
         const event = new Event('onchange');
         handleChange(event, locationSelected, true);
-        scrollToItem(locationSelected.id);
+        //scrollToItem(locationSelected.id);
     }, [locationId]);
 
 
@@ -121,7 +121,6 @@ export default function LocationsList(props) {
                     return new Date(a.selected_Date) - new Date(b.selected_Date);
                 });
                 setFilteredFutureDates(futureDates);
-                //console.log("3filteredFutureDates : " + filteredFutureDates);
             }
         }
 

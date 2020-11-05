@@ -65,7 +65,7 @@ function OpenMap(props) {
         popupAnchor: [-3, -76]
     });
 
-    //Museum's icon
+    //Theater's icon
     let Theater = L.icon({
         iconUrl: TheaterPin,
         iconSize: [38, 95],
@@ -75,7 +75,7 @@ function OpenMap(props) {
         popupAnchor: [-3, -76]
     });
 
-    //Museum's icon
+    //Cinema's icon
     let Cinema = L.icon({
         iconUrl: CinemaPin,
         iconSize: [38, 95],
@@ -85,6 +85,7 @@ function OpenMap(props) {
         popupAnchor: [-3, -76]
     });
 
+    const setCityChoosed = props.setCityChoosed;
     //Auth0
     let {
         loginWithRedirect,
@@ -92,10 +93,11 @@ function OpenMap(props) {
         user,
     } = useAuth0();
 
+
+    let [selectedCity, setSelectedCity] = useState(null);
+
     //By default, the center of the map is at Sion, Valais
     let [mapCenter, setmapCenter] = useState([46.2333, 7.35]);
-    let [selectedCity, setSelectedCity] = useState(null);
-    let [mapCenter, setmapCenter] = useState([46.2333, 7.35])
 
     const [openMarker, setOpenMarker] = useState(false);
     //Get all the cities from OpenSundayMap()
@@ -112,7 +114,7 @@ function OpenMap(props) {
     const history = useHistory();
 
     const ref = useOnclickOutside(() => {
-        setOpenMarker(false); 
+        setOpenMarker(false);
         console.log("clique en dehors");
     });
 
@@ -152,6 +154,7 @@ function OpenMap(props) {
 
     //method find me: set the  map's center and clean the url
 
+    //useEffect to set the center of the map linked to the user or the id
     //Button find me
     const handleLocateMe = () => {
         if (userContext.userPosition === null || userContext.userPosition === "notAllowed") {
@@ -162,10 +165,10 @@ function OpenMap(props) {
         }
     }
 
-    //useEffect to set the center of the map linked to the user or the id
-    let setCityChoosed = props.setCityChoosed;
-
     const handleCitySubmit = async (event, value) => {
+        if(value === null){
+            return setCityChoosed(value);
+        }
         //Define search text with city code and the city name
         const searchText = value.code + " " + value.name;
 
@@ -178,20 +181,8 @@ function OpenMap(props) {
         }
 
         //Define the city choosed with the method given in props to filter the list of locations
-        //setCityChoosed(value);
+        setCityChoosed(value);
     }
-
-
-    let redIcon = L.icon({
-        iconUrl: redPin,
-        shadowUrl: leafShadow,
-        iconSize: [38, 95], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76]
-    });
-
 
     //useEffect to set the center of the map
     useEffect(() => {
@@ -253,7 +244,7 @@ function OpenMap(props) {
                                         </a>
                                     </span>
                                 }
-                                
+
                             </Popup>
                         </Marker>
                     )}

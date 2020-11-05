@@ -1,49 +1,43 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {useContext, useEffect, useState} from "react";
 import "./App.css";
-import { useAuth0 } from "@auth0/auth0-react";
+import {useAuth0} from "@auth0/auth0-react";
 import request from "./utils/request";
 import endpoints from "./endpoints";
 import Loading from "./components/Loading";
-import { BrowserRouter, Link, Switch, Route, Redirect, useHistory, useParams, NavLink } from "react-router-dom";
-import DatePicker from 'react-datepicker';
+import {BrowserRouter, Switch, Route, useHistory, NavLink} from "react-router-dom";
 import 'react-datepicker/dist/react-datepicker.css';
-import MaterialCore from '@material-ui/core';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import TextField from "@material-ui/core/TextField";
 import 'react-datepicker/dist/react-datepicker.css';
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import {Navbar, Nav, NavDropdown} from 'react-bootstrap';
 import OpenMap from "./pages/OpenMap";
 import UserForm from "./components/UserForm";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import LocationsList from "./components/LocationsList";
 import SimpleBar from 'simplebar-react';
 import 'simplebar/dist/simplebar.min.css';
-import { UserContext } from "./utils/UserContext";
+import {UserContext} from "./utils/UserContext";
 import Button from "@material-ui/core/Button";
 import ManageLocation from "./pages/ManageLocation";
 import AddLocationModal from "./components/AddLocationModal";
 import Skeleton from "@material-ui/lab/Skeleton";
-import FilterPopper from "./components/FilterPopper";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
 import CheckBox from "@material-ui/core/Checkbox";
-import Input from "@material-ui/core/Input";
-import {Label} from "@material-ui/icons";
-import {forEach} from "react-bootstrap/ElementChildren";
+import Administrator from "./pages/Administrator";
 
 
 function OpenSundayMap() {
     //Get the city from the user's localization
     let [cities, setCities] = useState([]);
     let [locations, setLocations] = useState([]);
+    let [filteredLocationsByCity, setFilteredLocationsByCity] = useState([]);
     let [isLoaded, setIsLoaded] = useState(false);
     let [showAddModal, setShowAddModal] = useState(false);
     let [cityChoosed, setCityChoosed] = useState(null);
     let [types, setTypes] = useState([]);
 
     const userContext = useContext(UserContext);
-    const [anchorEl, setAnchorEl] =useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
     let [selectedFilter, setSelectedFilter] = useState([]);
     let history = useHistory();
     let [filteredLocations, setFilteredLocations] = useState([]);
@@ -53,21 +47,22 @@ function OpenSundayMap() {
     } = useAuth0();
 
     useEffect(() => {
-        if(userContext.userAuthenticated === "notFound")
+        if (userContext.userAuthenticated === "notFound")
             history.push("/UserForm")
     }, [userContext.userAuthenticated]);
-
 
     useEffect(() => {
         async function fetchLocation() {
             setIsLoaded(false);
             let locations = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
-                getAccessTokenSilently)
+                getAccessTokenSilently);
             setLocations(locations);
+            setFilteredLocationsByCity(locations);
             setFilteredLocations(locations);
             setIsLoaded(true);
         }
+
         let getAllTypes = async (e) => {
             let types = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.type}`,
@@ -88,11 +83,22 @@ function OpenSundayMap() {
         fetchLocation().catch();
     }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
+        console.log('5.la liste filtrée', filteredLocationsByCity);
+        filterArray().catch();
+    }, [filteredLocationsByCity]);
 
-        //filter the list to re-render only the location from one city
-        //locations.filter(location);
-    },[cityChoosed]);
+    useEffect(() => {
+        //Filter the list to re-render only the location from one city
+        console.log('2.change la ville', cityChoosed);
+        if (cityChoosed !== null) {
+            setFilteredLocationsByCity(locations.filter(location => location.id_City === cityChoosed.id));
+        } else {
+            setFilteredLocationsByCity(locations);
+        }
+
+
+    }, [cityChoosed]);
 
     let handleClose = async () => {
         setShowAddModal(false);
@@ -102,7 +108,7 @@ function OpenSundayMap() {
         setShowAddModal(true);
     }
 
-    const handleMenuClick = async(event) => {
+    const handleMenuClick = async (event) => {
         setAnchorEl(event.currentTarget);
     }
     const handleMenuClose = () => {
@@ -110,16 +116,16 @@ function OpenSundayMap() {
     }
 
     let addFilter = async (value) => {
-        if(selectedFilter.length !== 0){
+        if (selectedFilter.length !== 0) {
             let array = selectedFilter;
             let index = array.indexOf(value);
-            if(index !== -1){
+            if (index !== -1) {
                 array.splice(index, 1);
                 setSelectedFilter(array);
-            }else{
+            } else {
                 selectedFilter.push(value);
             }
-        }else{
+        } else {
             selectedFilter.push(value);
         }
 
@@ -127,17 +133,19 @@ function OpenSundayMap() {
     }
 
     let filterArray = async () => {
+        console.log('filtre', filteredLocationsByCity);
         filteredLocations = [];
         selectedFilter.map(filter => {
-            let locationBySelectedFilter = locations.filter(location => location.id_Type===filter);
+            let locationBySelectedFilter = filteredLocationsByCity.filter(location => location.id_Type === filter);
             locationBySelectedFilter.forEach(location => {
                 filteredLocations.push(location);
             })
         })
-        if(selectedFilter.length === 0){
-            filteredLocations = locations;
+        if (selectedFilter.length === 0) {
+            filteredLocations = filteredLocationsByCity;
 
-        };
+        }
+        ;
         setFilteredLocations(filteredLocations);
     }
 
@@ -145,17 +153,20 @@ function OpenSundayMap() {
         <>
             <div className="map-container">
                 <div className="map-left">
-                    {locations.length === 0 ? <Skeleton variant="rect" style={{height: "100vh", width: "100%"}} />
-                    : <OpenMap locations={locations}
-                               cities={cities}
-                               positionUser={userContext.userPosition}
-                               setCityChoosed={setCityChoosed}
+                    {locations.length === 0 ? <Skeleton variant="rect" style={{height: "100vh", width: "100%"}}/>
+                        : <OpenMap locations={locations}
+                                   cities={cities}
+                                   positionUser={userContext.userPosition}
+                                   setCityChoosed={setCityChoosed}
                         />}
                 </div>
 
                 <div className="locations-right">
-                    <Button variant="contained" color="default" onClick={handleAddClick}>Add a new Location</Button>
-                    <Button variant="contained" color="primary" aria-controls="simple-menu" aria-haspopup="true" onClick={handleMenuClick}>Filter</Button>
+                    <div style={{marginBottom: "1em"}}>
+                        <Button variant="contained" color="primary" aria-controls="simple-menu" aria-haspopup="true"
+                                onClick={handleMenuClick}>Filter</Button>
+                        <Button variant="contained" color="default" onClick={handleAddClick}>Add a new Location</Button>
+                    </div>
                     <Menu
                         id="filters-menu"
                         anchorEl={anchorEl}
@@ -164,26 +175,30 @@ function OpenSundayMap() {
                         onClose={handleMenuClose}
                     >
                         {types.map((type, index) => (
-                            <MenuItem value={type.id} selected={false}>
+                            <MenuItem key={type.id} value={type.id} selected={false}>
                                 <CheckBox value={type.id}
-                                          //onClick={(value) => handleMenuItemClick(parseInt(value.target.value))}
-                                        onClick={(value) => addFilter(parseInt(value.target.value))}
-                                 >
-                               </CheckBox>
+                                    //onClick={(value) => handleMenuItemClick(parseInt(value.target.value))}
+                                          onClick={(value) => addFilter(parseInt(value.target.value))}
+                                >
+                                </CheckBox>
                                 {type.description}
                             </MenuItem>
                         ))}
                     </Menu>
                     <SimpleBar style={{maxHeight: "95%", height: "inherit"}}>
-                        {isLoaded ? (<LocationsList locations={filteredLocations}/>) : <LinearProgress/>}
+                        {isLoaded ? (<LocationsList locations={filteredLocations} style={{marginBottom: "1em"}}/>) :
+                            <LinearProgress/>}
                     </SimpleBar>
                 </div>
             </div>
 
-            {showAddModal ? <AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/> : null}
+            {showAddModal ?
+                <AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/> : null}
         </>
     );
 }
+
+
 
 function App() {
 
@@ -204,17 +219,17 @@ function App() {
     let userContext = useContext(UserContext);
 
     useEffect(() => {
-        if(userContext.userAuthenticated === null) {
+        if (userContext.userAuthenticated === null) {
             return;
         }
-        if(userContext.userAuthenticated.isCreator){
+        if (userContext.userAuthenticated.isCreator) {
             setIsCreator(true);
         }
         setCurrentUser(userContext.userAuthenticated);
     }, [userContext])
 
     useEffect(() => {
-        async function fetchUser(){
+        async function fetchUser() {
             let response = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.user}/GetAuthenticatedUser/${user.sub}`,
                 getAccessTokenSilently
@@ -226,8 +241,8 @@ function App() {
             userContext.setUserAuthenticated(response);
         }
 
-        if(isAuthenticated){
-            if(userContext.userAuthenticated == null){
+        if (isAuthenticated) {
+            if (userContext.userAuthenticated == null) {
                 fetchUser().catch();
             }
         }
@@ -243,7 +258,7 @@ function App() {
     let handleLogoutClick = async (e) => {
         e.preventDefault();
         userContext.setUserAuthenticated(null);
-        logout({ returnTo: window.location.origin });
+        logout({returnTo: window.location.origin});
     };
 
     if (loading) {
@@ -265,7 +280,8 @@ function App() {
                                 )}
                                 {isCreator ? (
                                     <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
-                                ) : null }
+                                ) : null}
+                                <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
                             </Nav>
                             {isAuthenticated ? (
                                     /*If the user is authenticated*/
@@ -294,24 +310,30 @@ function App() {
                             {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
-                                    <Button  variant="contained" color="primary" onClick={handleLoginClick}>Login</Button>
+                                    <Button variant="contained" color="primary"
+                                            onClick={handleLoginClick}>Login</Button>
                                 </div>
                             )}
                         </Route>
-                        <Route exact path="/location/:locationId" >
+                        <Route exact path="/location/:locationId">
                             {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
                                     <h1>Welcome to OpenSunday, please log in</h1>
-                                    <Button  variant="contained" color="primary" onClick={handleLoginClick}>Login</Button>
+                                    <Button variant="contained" color="primary"
+                                            onClick={handleLoginClick}>Login</Button>
                                 </div>
                             )}
                         </Route>
                         <ProtectedRoute exact path="/UserForm" component={UserForm}/>
-                        <ProtectedRoute exact path="/ManageLocation" component={ManageLocation}/>
+                        <ProtectedRoute exact path="/Admin" component={Administrator}/>
+                        <ProtectedRoute exact path="/ManageLocation" >
+                            <ManageLocation isAdmin={false}/>
+                        </ProtectedRoute>
                     </Switch>
                 </div>
             </div>
         </BrowserRouter>
     );
 }
+
 export default App;

@@ -31,7 +31,8 @@ const sortModel = [
     },
 ];
 
-export default function ManageLocations(){
+export default function ManageLocations(props){
+    let isAdmin = props.isAdmin;
     let [locations, setLocations] = useState([]);
     let [types, setTypes] = useState([]);
     let [cities, setCities] = useState([]);
@@ -81,7 +82,9 @@ export default function ManageLocations(){
     let fetchLocations = async() => {
         locations = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
             getAccessTokenSilently);
-        locations = locations.filter(location => location.id_User===userContext.userAuthenticated.id);
+        if(!isAdmin){
+            locations = locations.filter(location => location.id_User===userContext.userAuthenticated.id);
+        }
         setLocations(locations);
     }
 
@@ -221,7 +224,7 @@ export default function ManageLocations(){
                 <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleDefineDates}>Define Opened Dates</Button>
                 <Button variant="contained" color="secondary" style={{margin:"1em"}} onClick={handleDeleteClick}>Delete Selected Row</Button>
             </p>
-            <div  style={{ height: 500, width: '90%' }}>
+            <div className="datagrid-container" style={{  }}>
                 <DataGrid
                     rows={locations}
                     columns={columns}

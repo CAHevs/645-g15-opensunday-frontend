@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-size: calc(10px + 2vmin);
   color: black;
 }
@@ -85,7 +85,7 @@ hr{
 
 .locations-right{
   padding: 0.25em;
-  max-height: 100vh;
+  max-height: 99vh;
   background: #efeaea;
   width: 25%;
   height: available;
@@ -112,6 +112,7 @@ hr{
 .navLinks{
   color: #aeaeae;
   text-decoration: none;
+  margin-left: 1em;
 }
 .navLinks:hover{
   color: #cccccc;
@@ -132,6 +133,26 @@ hr{
 .homeLinks:active{
   color: #cccccc;
   text-decoration: none;
+}
+
+.administrator{
+  margin: 1em;
+  width: 85%;
+  height: available;
+}
+
+.datagrid-container{
+  height: 500px;
+  width: 90%;
+}
+
+.administrator .datagrid-container {
+  height: 500px;
+  width: 100%;
+}
+
+UsersList {
+  height: 1500px;
 }
 
 

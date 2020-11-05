@@ -18,6 +18,7 @@ export default async function (url, getAccessTokenSilently) {
     if(response.status===404){
       return response.status;
     }
+    return null;
   } catch (e) {
     //console.error(e);
     return null;
