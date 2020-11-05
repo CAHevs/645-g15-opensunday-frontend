@@ -6,8 +6,12 @@ import { Link } from "react-router-dom";
 import logo from '../logo.svg';
 import L from 'leaflet';
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet';
-import redIcon from '../components/Popup';
-import Restaurant from '../components/Popup';
+import redPin from '../assets/redPin.png';
+import RestaurantPin from '../assets/RestaurantPin.png';
+import BarPin from '../assets/BarPin.png';
+import MuseumPin from '../assets/MuseumPin.png';
+import TheaterPin from '../assets/TheaterPin.png';
+import CinemaPin from '../assets/CinemaPin.png';
 import { UserContext } from "../utils/UserContext"
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from "@material-ui/core/TextField";
@@ -17,9 +21,69 @@ import { Button } from '@material-ui/core';
 import { useHistory, useParams } from "react-router-dom";
 import Control from "react-leaflet-control";
 import NavigationTwoToneIcon from '@material-ui/icons/NavigationTwoTone';
-
+import useOnclickOutside from "react-cool-onclickoutside";
 
 function OpenMap(props) {
+
+    //Position's icon
+    let redIcon = L.icon({
+        iconUrl: redPin,
+        iconSize: [38, 95], // size of the icon
+        shadowSize: [50, 64], // size of the shadow
+        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+        shadowAnchor: [4, 62],  // the same for the shadow
+        popupAnchor: [-3, -76]
+    });
+
+    //Restaurant's icon
+    let Restaurant = L.icon({
+        iconUrl: RestaurantPin,
+        iconSize: [38, 95],
+        shadowSize: [50, 64],
+        iconAnchor: [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor: [-3, -76]
+    });
+
+    //Bar's icon
+    let Bar = L.icon({
+        iconUrl: BarPin,
+        iconSize: [38, 95],
+        shadowSize: [50, 64],
+        iconAnchor: [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor: [-3, -76]
+    });
+
+    //Museum's icon
+    let Museum = L.icon({
+        iconUrl: MuseumPin,
+        iconSize: [38, 95],
+        shadowSize: [50, 64],
+        iconAnchor: [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor: [-3, -76]
+    });
+
+    //Museum's icon
+    let Theater = L.icon({
+        iconUrl: TheaterPin,
+        iconSize: [38, 95],
+        shadowSize: [50, 64],
+        iconAnchor: [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor: [-3, -76]
+    });
+
+    //Museum's icon
+    let Cinema = L.icon({
+        iconUrl: CinemaPin,
+        iconSize: [38, 95],
+        shadowSize: [50, 64],
+        iconAnchor: [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor: [-3, -76]
+    });
 
     //Auth0
     let {
@@ -28,30 +92,36 @@ function OpenMap(props) {
         user,
     } = useAuth0();
 
-    let [mapCenter, setmapCenter] = useState([46.2333, 7.35])
+    //By default, the center of the map is at Sion, Valais
+    let [mapCenter, setmapCenter] = useState([46.2333, 7.35]);
 
+    const [openMarker, setOpenMarker] = useState(false);
     //Get all the cities from OpenSundayMap()
     let cities = props.cities;
 
     //Get the locations from the "LocationsList.js" function in OpenSundayMap()
     let locations = props.locations;
 
+    //Get the location id from the URL
     let { locationId } = useParams();
     let location = null;
 
     const userContext = useContext(UserContext);
     const history = useHistory();
 
+    const ref = useOnclickOutside(() => {
+        setOpenMarker(false); 
+        console.log("clique en dehors");
+    });
+
 
     //Set the url with location's id
     const handleClick = (event, loc) => {
         history.push("/location/" + loc.id);
+        setOpenMarker(!openMarker);
     };
 
-
-
     //If the user doesn't come from an url/id
-
     if (locationId === undefined) {
         locationId = null;
     } else {
@@ -63,7 +133,6 @@ function OpenMap(props) {
             locationId = null;
         }
     }
-
 
     // Get the position from the props given from Home page
     useEffect(() => {
@@ -79,18 +148,17 @@ function OpenMap(props) {
         }
     }, [userContext.userPosition]);
 
-
-    //Button find me 
+    //method find me: set the  map's center and clean the url
     const handleLocateMe = () => {
         if (userContext.userPosition === null || userContext.userPosition === "notAllowed") {
-            console.log("location nulle du user :" + userContext.userPosition)
+            alert("We couldn't locate you :( Can you refresh the page ?")
         } else {
-            console.log("location du user :" + userContext.userPosition);
             setmapCenter(userContext.userPosition);
+            history.push("/");
         }
     }
 
-    //useEffect to set the center of the map
+    //useEffect to set the center of the map linked to the user or the id
     useEffect(() => {
         locationId === null ? (
             //if the user doesn't give his location, the map's center is by default at Sion, Valais
@@ -105,7 +173,7 @@ function OpenMap(props) {
             <Map
                 className="map"
                 center={mapCenter}
-                zoom={15}
+                zoom={17}
             >
                 <Control position="topright">
                     <Autocomplete
@@ -117,9 +185,10 @@ function OpenMap(props) {
                         renderInput={(params) => <TextField {...params} label="City" variant="outlined" style={{ backgroundColor: "white", borderRadius: "6px" }} />}
                     />
                 </Control>
+                {/* Display the button FindMe if the user authorizes it*/}
                 {userContext.userPosition === null || userContext.userPosition === "notAllowed" ? null : (
                     <Control position="bottomright">
-                        <Button size="small" variant="contained" onClick={handleLocateMe}><NavigationTwoToneIcon /></Button>
+                        <Button ref={ref} size="small" variant="contained" onClick={handleLocateMe}>Find me<NavigationTwoToneIcon /></Button>
                     </Control>
                 )}
                 <TileLayer
@@ -127,26 +196,29 @@ function OpenMap(props) {
                     url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                 />
                 {
-                    locations.map((loc, index) =>
+                    locations.map((loc) =>
                         //Get latitude and longitude from each location and display it in a Marker on the map
-                        <Marker key={`marker-${index}`} position={[loc.lat, loc.lng]}
+                        <Marker key={`marker-${loc.id}`} position={[loc.lat, loc.lng]}
 
-                            // icon={loc.type.description}
-                            icon={new redIcon()}
+                            //Define the icon from the type of the loc
+                            icon={eval(loc.type.description)}
 
                             //Change the url with location id by clicking
                             onClick={(event) => handleClick(event, loc)}
                         >
                             <Popup>
-                                <span>
-                                    {loc.name} <br /> {loc.type.description} <br />
-                                    <EmailIcon size={25} round={true}> </EmailIcon>
-                                    <a className="video-email_button button-hover"
-                                        href={"mailto:?subject=I wanted you to see this site&body=Check out this link: https://grp15.p645.hevs.ch/location/" + loc.id}
-                                        title="Share viaEmail">
-                                        <span className="video-email_button-text">Share me</span>
-                                    </a>
-                                </span>
+                                {openMarker &&
+                                    <span>
+                                        {loc.name} <br /> {loc.type.description} <br />
+                                        <EmailIcon size={25} round={true}> </EmailIcon>
+                                        <a className="video-email_button button-hover"
+                                            href={"mailto:?subject=I wanted you to see this " + loc.type.description + "&body=Hey, check out the " + loc.type.description + "'s link: https://grp15.p645.hevs.ch/location/" + loc.id + " on OpenSundayMap !"}
+                                            title="Share viaEmail">
+                                            <span className="video-email_button-text">Share me</span>
+                                        </a>
+                                    </span>
+                                }
+                                
                             </Popup>
                         </Marker>
                     )}
@@ -164,5 +236,4 @@ function OpenMap(props) {
         </>
     );
 }
-
 export default OpenMap;
