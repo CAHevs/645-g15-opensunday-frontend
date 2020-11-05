@@ -259,7 +259,7 @@ export default function DefineDatesModal(props) {
     }
 
     const handleModalClose = (event) => {
-        event.preventDefault();
+
         setRight([]);
         setLeft([]);
         setDates([]);

@@ -281,15 +281,15 @@ export default function ManageLocations(props){
 
 
                                 </Field><br/><br/>
-                                <Button variant="contained" color="primary" type="submit">
-                                    Edit
-                                </Button>
                             </Form>
                         </Formik>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="contained" color="secondary" onClick={handleClose}>
                             Close
+                        </Button>
+                        <Button variant="contained" color="primary" type="submit">
+                            Edit
                         </Button>
                     </Modal.Footer>
                 </Modal>
@@ -301,8 +301,8 @@ export default function ManageLocations(props){
                     </Modal.Header>
                     <Modal.Body>
                         <p>Are you sure you want to delete this location ? </p>
-                        <Button onClick={deleteLocation}>Yes</Button>
-                        <Button onClick={handleClose}>No</Button>
+                        <Button onClick={deleteLocation} color="primary">Yes</Button>
+                        <Button onClick={handleClose} color="secondary">No</Button>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="contained" color="secondary" onClick={handleClose}>

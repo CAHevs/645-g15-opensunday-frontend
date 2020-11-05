@@ -6,5 +6,6 @@
   "type": "/api/type",
   "reporting": "/api/reporting",
   "rating": "/api/rating",
-  "location_per_date": "/api/location_per_date"
+  "location_per_date": "/api/location_per_date",
+  "admin": "/api/admin"
 }

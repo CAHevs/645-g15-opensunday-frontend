@@ -133,7 +133,6 @@ function OpenSundayMap() {
     }
 
     let filterArray = async () => {
-        console.log('filtre', filteredLocationsByCity);
         filteredLocations = [];
         selectedFilter.map(filter => {
             let locationBySelectedFilter = filteredLocationsByCity.filter(location => location.id_Type === filter);
@@ -215,18 +214,31 @@ function App() {
     } = useAuth0();
 
     let [isCreator, setIsCreator] = useState(false);
+    let [isAdmin, setIsAdmin] = useState(false);
 
     let userContext = useContext(UserContext);
 
     useEffect(() => {
+
+        async function fetchAdmin(){
+            let response = await request(
+                `${process.env.REACT_APP_SERVER_URL}${endpoints.admin}/${userContext.userAuthenticated.id}`,
+                getAccessTokenSilently
+            );
+            setIsAdmin(true);
+        }
+
         if (userContext.userAuthenticated === null) {
             return;
         }
         if (userContext.userAuthenticated.isCreator) {
             setIsCreator(true);
         }
+        if(userContext.userAuthenticated.id != null){
+            fetchAdmin().catch();
+        }
         setCurrentUser(userContext.userAuthenticated);
-    }, [userContext])
+    }, [userContext]);
 
     useEffect(() => {
         async function fetchUser() {
@@ -265,7 +277,6 @@ function App() {
         return <Loading/>;
     }
 
-
     return (
         <BrowserRouter>
             <div className="App">
@@ -279,9 +290,12 @@ function App() {
                                     <NavLink to="/UserForm" className="navLinks">Register</NavLink>
                                 )}
                                 {isCreator ? (
-                                    <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
+                                        isAdmin ? (
+                                                <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
+                                            ) : <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
+
                                 ) : null}
-                                <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
+
                             </Nav>
                             {isAuthenticated ? (
                                     /*If the user is authenticated*/
@@ -309,7 +323,9 @@ function App() {
                         <Route exact path="/">
                             {isAuthenticated ? <OpenSundayMap/> : (
                                 <div>
+                                    <br/>
                                     <h1>Welcome to OpenSunday, please log in</h1>
+                                    <br/>
                                     <Button variant="contained" color="primary"
                                             onClick={handleLoginClick}>Login</Button>
                                 </div>

@@ -3,14 +3,10 @@ import { BrowserRouter, Link, Route, Redirect, useHistory } from 'react-router-d
 import {Formik, Field, Form } from 'formik';
 import {useAuth0} from "@auth0/auth0-react";
 import endpoints from "../endpoints.json";
-import request from "../utils/request";
 import * as Yup from 'yup';
 
 
 function UserForm() {
-
-    let [emptyUser, setemptyUser] = useState([]);
-    let [newUser, setnewUser] = useState([]);
 
     const [registerDone, setregisterDone] = useState(false);
 
@@ -92,6 +88,7 @@ function UserForm() {
                 }}>
                 {({errors, touched}) =>(
                     <Form>
+                        <br/>
                         <Field
                             /* Link the created ref to the title input */
                             type="text"
