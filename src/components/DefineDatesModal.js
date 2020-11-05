@@ -18,6 +18,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Paper from '@material-ui/core/Paper';
 import Divider from '@material-ui/core/Divider';
+import {useSnackbar} from "notistack";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -45,6 +46,8 @@ export default function DefineDatesModal(props) {
     let showDefineDatesModal = props.showDefineDatesModal;
     let handleClose = props.handleClose;
     let location = props.location;
+
+    const { enqueueSnackbar } = useSnackbar();
 
     const [checked, setChecked] = useState([]);
     const [left, setLeft] = useState([]);
@@ -194,6 +197,8 @@ export default function DefineDatesModal(props) {
         let currentIdLoc = null;
         let isOk = true;
 
+
+
         //Find which dates have been added in Open date and which ones have been removed
         const futureLocationsPerDate = locationsPerDate.filter(lpd => new Date(lpd.date.selected_Date) >= new Date().setHours(0, 0, 0, 0));
 
@@ -247,9 +252,10 @@ export default function DefineDatesModal(props) {
         }
         handleModalClose(event);
         if (isOk) {
-            alert('Your opened dates have been registered ! Thank you !');
+
+            enqueueSnackbar('Your opened dates have been registered ! Thank you !', {variant:"success"});
         } else {
-            alert('Oops ! Something went wrong. Please try again or contact the administrator(admin@opensunday.ch).');
+            enqueueSnackbar('Oops ! Something went wrong. Please try again or contact the administrator(admin@opensunday.ch).', {variant:"error"});
         }
 
         console.log('datesToDelete', datesToDelete);

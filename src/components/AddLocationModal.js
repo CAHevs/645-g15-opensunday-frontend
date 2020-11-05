@@ -68,6 +68,7 @@ export default function AddLocationModal(props) {
     })
 
     let handleAddSubmit = async (values) => {
+        console.log('values', values);
 
         let newLocation = values;
 
@@ -134,24 +135,26 @@ export default function AddLocationModal(props) {
     }
 
     const fieldSelectStyle = {
-        "border": 'none',
+        border: 'none',
         width: '24.5ch',
-        "padding-top":'20px',
-        "padding-bottom":'20px'
+        paddingTop: '20px',
+        paddingBottom: '20px'
     }
 
     return (
         <>
-            <Formik initialValues={initialValues}
-                    validationSchema={addLocationSchema}
-                    onSubmit={values => (handleAddSubmit(values))}
-            >
-                {({errors, touched, handleSubmit}) => (
-                    <Modal show={showAddModal} onHide={handleClose}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Add new location</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
+
+            <Modal show={showAddModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add new location</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Formik initialValues={initialValues}
+                            validationSchema={addLocationSchema}
+                            onSubmit={values => (handleAddSubmit(values))}
+                    >
+                        {({errors, touched, handleSubmit}) => (
+
                             <Form>
                                 <TextField
                                     type="text"
@@ -214,21 +217,20 @@ export default function AddLocationModal(props) {
                                         <option key={city.id} value={city.id}>{city.name}</option>
                                     )}
                                 </Field><br/>
+                                <Button variant="contained" color="primary" type="submit">
+                                    Create Location
+                                </Button>
                             </Form>
-
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="contained" color="secondary" onClick={handleClose} style={{marginRight: "0.2em"}}>
-                                Close
-                            </Button>
-                            <Button variant="contained" color="primary" onClick={handleSubmit}>
-                                Create Location
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                )}
-
-            </Formik>
+                        )}
+                    </Formik>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="contained" color="secondary" onClick={handleClose}
+                            style={{marginRight: "0.2em"}}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 }

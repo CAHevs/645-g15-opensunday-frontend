@@ -3,6 +3,7 @@ import auth_config from "./auth_config";
 import {UserContext} from "./utils/UserContext";
 import App from "./App";
 import React from "react";
+import {SnackbarProvider, useSnackbar} from 'notistack';
 
 
 class AppWrapper extends React.Component {
@@ -42,7 +43,9 @@ class AppWrapper extends React.Component {
                         setUserAuthenticated: this.setUserAuthenticated,
                         setUserPosition: this.setUserPosition
                     }}>
-                    <App className="App"/>
+                    <SnackbarProvider maxSnack={5}>
+                        <App className="App"/>
+                    </SnackbarProvider>
                 </UserContext.Provider>
 
             </Auth0Provider>

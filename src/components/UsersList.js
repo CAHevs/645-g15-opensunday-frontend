@@ -1,10 +1,10 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import request from "../utils/request";
 import endpoints from "../endpoints.json";
 import {useAuth0} from "@auth0/auth0-react";
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { lighten, makeStyles } from '@material-ui/core/styles';
+import {lighten, makeStyles} from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -19,10 +19,13 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
+import LockIcon from '@material-ui/icons/Lock';
+import {Modal} from "react-bootstrap";
+import Button from "@material-ui/core/Button";
+import putRequest from "../utils/putRequest";
+import deleteRequest from "../utils/deleteRequest";
+import {useSnackbar} from "notistack";
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -45,22 +48,24 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-    { id: 'id', numeric: false, disablePadding: true, label: 'Id' },
-    { id: 'firstname', numeric: true, disablePadding: false, label: 'Firstname' },
-    { id: 'lastname', numeric: true, disablePadding: false, label: 'Lastname' },
-    { id: 'email', numeric: true, disablePadding: false, label: 'Email' },
-    { id: 'phone', numeric: true, disablePadding: false, label: 'Phone' },
-    { id: 'isCreator', numeric: true, disablePadding: false, label: 'IsCreator' },
-    { id: 'isBlocked', numeric: true, disablePadding: false, label: 'IsBlocked' },
-    { id: 'ref_auth', numeric: true, disablePadding: false, label: 'Ref Auth' },
+    {id: 'id', numeric: false, disablePadding: true, label: 'Id'},
+    {id: 'firstname', numeric: true, disablePadding: false, label: 'Firstname'},
+    {id: 'lastname', numeric: true, disablePadding: false, label: 'Lastname'},
+    {id: 'email', numeric: true, disablePadding: false, label: 'Email'},
+    {id: 'phone', numeric: true, disablePadding: false, label: 'Phone'},
+    {id: 'isCreator', numeric: true, disablePadding: false, label: 'IsCreator'},
+    {id: 'isBlocked', numeric: true, disablePadding: false, label: 'IsBlocked'},
+    {id: 'ref_auth', numeric: true, disablePadding: false, label: 'Ref Auth'},
 ];
+
 function getComparator(order, orderBy) {
     return order === 'desc'
         ? (a, b) => descendingComparator(a, b, orderBy)
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
+
 function EnhancedTableHead(props) {
-    const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
+    const {classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort} = props;
     const createSortHandler = (property) => (event) => {
         onRequestSort(event, property);
     };
@@ -73,7 +78,7 @@ function EnhancedTableHead(props) {
                         indeterminate={numSelected > 0 && numSelected < rowCount}
                         checked={rowCount > 0 && numSelected === rowCount}
                         onChange={onSelectAllClick}
-                        inputProps={{ 'aria-label': 'select all desserts' }}
+                        inputProps={{'aria-label': 'select all desserts'}}
                     />
                 </TableCell>
                 {headCells.map((headCell) => (
@@ -134,12 +139,78 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
     const classes = useToolbarStyles();
-    const { usersSelected } = props;
+    const {usersSelected, setSelected, setUsersListRefresh} = props;
+    let [showDeleteUsersModal, setShowDeleteUsersModal] = useState(false);
+    let [showBlockUsersModal, setShowBlockUsersModal] = useState(false);
 
-    let handleDeleteClick = (event) => {
-        event.preventDefault()
-        console.log('delete', usersSelected);
+    const {enqueueSnackbar} = useSnackbar();
 
+    const {getAccessTokenSilently} = useAuth0();
+
+    //Methods Delete and Put
+    let updateUser = async (userToUpdate) => {
+        return await putRequest(`${process.env.REACT_APP_SERVER_URL}${endpoints.user}/${userToUpdate.id}`, getAccessTokenSilently, JSON.stringify(userToUpdate));
+    };
+    let deleteUser = async (userToDelete) => {
+        return await deleteRequest(`${process.env.REACT_APP_SERVER_URL}${endpoints.user}/${userToDelete.id}`, getAccessTokenSilently);
+    };
+
+    let handleDeleteUsersClick = (event) => {
+        event.preventDefault();
+        setShowDeleteUsersModal(true);
+
+    }
+    let handleCloseDeleteUsersModal = (event) => {
+        event.preventDefault();
+        setShowDeleteUsersModal(false);
+    }
+    let handleBlockUsersClick = (event) => {
+        event.preventDefault();
+        setShowBlockUsersModal(true);
+
+    }
+    let handleCloseBlockUsersModal = (event) => {
+        event.preventDefault();
+        setShowBlockUsersModal(false);
+    }
+
+
+    let blockUsers = (event) => {
+        event.preventDefault();
+        usersSelected.forEach(userToUpdate => {
+            userToUpdate.isBlocked = !userToUpdate.isBlocked;
+            const response = updateUser(userToUpdate).then(() => {
+                if (userToUpdate.id === usersSelected[usersSelected.length - 1].id) {//Refresh the list only once
+                    setSelected([]);
+                    setUsersListRefresh(true);
+                    enqueueSnackbar("Users successfully updated", {variant: 'success'});
+                }
+            });
+        });
+
+        setSelected([]);
+        setShowBlockUsersModal(false);
+    }
+    let deleteUsers = (event) => {
+        event.preventDefault();
+        usersSelected.forEach(userToDelete => {
+            if (userToDelete.isCreator) {
+                enqueueSnackbar("The user " + userToDelete.id + " is a creator. Delete his locations first !", {variant: 'error'});
+                if (userToDelete.id === usersSelected[usersSelected.length - 1].id) {
+                    setSelected([]);
+                    setUsersListRefresh(true);
+                }
+            } else {
+                const response = deleteUser(userToDelete).then(() => {
+                    if (userToDelete.id === usersSelected[usersSelected.length - 1].id) {//Refresh the list only once
+                        enqueueSnackbar("Users successfully deleted", {variant: 'success'});
+                        setSelected([]);
+                        setUsersListRefresh(true);
+                    }
+                });
+            }
+        });
+        setShowDeleteUsersModal(false);
     }
 
     return (
@@ -159,42 +230,78 @@ const EnhancedTableToolbar = (props) => {
             )}
 
             {usersSelected.length > 0 ? (
-                <Tooltip title="Delete" >
-                    <IconButton aria-label="delete" onClick={handleDeleteClick}>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Filter list">
-                    <IconButton aria-label="filter list">
-                        <FilterListIcon />
-                    </IconButton>
-                </Tooltip>
-            )}
+                <>
+                    <Tooltip title="Delete">
+                        <IconButton aria-label="delete" onClick={handleDeleteUsersClick}>
+                            <DeleteIcon/>
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Block">
+                        <IconButton aria-label="block" onClick={handleBlockUsersClick}>
+                            <LockIcon/>
+                        </IconButton>
+                    </Tooltip>
+                </>
+            ) : null}
+            {showDeleteUsersModal ? (
+                <Modal show={true} onHide={handleCloseDeleteUsersModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete {usersSelected.length} User(s)</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>This action will delete {usersSelected.length} user(s) from the database. This action is
+                            irreversible ! </p>
+                        <p>Are you sure to remove them ?</p>
+                        <Button variant="outlined" color="default" onClick={deleteUsers}>Yes</Button>
+                        <Button variant="outlined" color="secondary" onClick={handleCloseDeleteUsersModal}
+                                style={{marginLeft: '1em'}}>No</Button>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="contained" color="secondary" onClick={handleCloseDeleteUsersModal}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            ) : null}
+            {showBlockUsersModal ? (
+                <Modal show={true} onHide={handleCloseBlockUsersModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Block {usersSelected.length} User(s)</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>This action will reverse the current status "isBlocked" for the users choosed. Do you want to
+                            continue ? </p>
+                        <Button variant="outlined" color="default" onClick={blockUsers}>Yes</Button>
+                        <Button variant="outlined" color="secondary" onClick={handleCloseBlockUsersModal}
+                                style={{marginLeft: '1em'}}>No</Button>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="contained" color="secondary" onClick={handleCloseBlockUsersModal}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            ) : null}
+
         </Toolbar>
     );
 };
 
 EnhancedTableToolbar.propTypes = {
-    numSelected: PropTypes.number.isRequired,
+    usersSelected: PropTypes.array.isRequired,
+    setUsersListRefresh: PropTypes.func.isRequired,
 };
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        width: '90%',
-        maxWidth: 'inherit',
-        maxHeight: 'inherit',
-        overflow: 'scroll',
+        width: '100%',
     },
     paper: {
-        width: '90%',
+        width: '100%',
         marginBottom: theme.spacing(2),
-        maxHeight: '90%',
-        overflow: 'hidden',
     },
     table: {
         minWidth: 750,
-        overflow: 'scroll',
     },
     visuallyHidden: {
         border: 0,
@@ -216,7 +323,8 @@ export default function UsersList() {
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [dense, setDense] = React.useState(false);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [rowsPerPage, setRowsPerPage] = React.useState(8);
+    const [usersListRefresh, setUsersListRefresh] = React.useState(true);
 
     let [users, setUsers] = useState([]);
     let {getAccessTokenSilently} = useAuth0();
@@ -229,10 +337,13 @@ export default function UsersList() {
             if (users !== null) {
                 setUsers(users);
             }
-
         }
-        getAllUsers().catch();
-    }, []);
+        if (usersListRefresh) {
+            getAllUsers().catch();
+            setUsersListRefresh(false);
+        }
+
+    }, [usersListRefresh]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -250,27 +361,21 @@ export default function UsersList() {
     };
 
     const handleClick = (event, row) => {
-        const selectedIndex = selected.indexOf(row.id);
+        const selectedIndex = selected.indexOf(row);
         let newSelected = [];
 
         if (selectedIndex === -1) {
             newSelected = newSelected.concat(selected, row);
-            console.log('1NewSelected', newSelected);
         } else if (selectedIndex === 0) {
             newSelected = newSelected.concat(selected.slice(1));
-            console.log('2NewSelected', newSelected);
         } else if (selectedIndex === selected.length - 1) {
             newSelected = newSelected.concat(selected.slice(0, -1));
-            console.log('3NewSelected', newSelected);
         } else if (selectedIndex > 0) {
             newSelected = newSelected.concat(
                 selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex),
+                selected.slice(selectedIndex + 1),
             );
-            console.log('4NewSelected', newSelected);
         }
-        console.log('selected', selected);
-
         setSelected(newSelected);
     };
 
@@ -283,17 +388,17 @@ export default function UsersList() {
         setPage(0);
     };
 
-    const isSelected = (id) => selected.indexOf(id) !== -1;
+    const isSelected = (row) => selected.indexOf(row) !== -1;
 
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
-
+    //const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
 
 
     return (
         <>
-            <Paper className={classes.paper} >
-                <EnhancedTableToolbar usersSelected={selected} />
-                <TableContainer >
+            <Paper className={classes.paper}>
+                <EnhancedTableToolbar usersSelected={selected} setSelected={setSelected}
+                                      setUsersListRefresh={setUsersListRefresh}/>
+                <TableContainer style={{height: "500px"}}>
                     <Table
                         className={classes.table}
                         aria-labelledby="tableTitle"
@@ -309,11 +414,11 @@ export default function UsersList() {
                             onRequestSort={handleRequestSort}
                             rowCount={users.length}
                         />
-                        <TableBody >
+                        <TableBody>
                             {stableSort(users, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const isItemSelected = isSelected(row.id);
+                                    const isItemSelected = isSelected(row);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
@@ -329,7 +434,7 @@ export default function UsersList() {
                                             <TableCell padding="checkbox">
                                                 <Checkbox
                                                     checked={isItemSelected}
-                                                    inputProps={{ 'aria-labelledby': labelId }}
+                                                    inputProps={{'aria-labelledby': labelId}}
                                                 />
                                             </TableCell>
                                             <TableCell component="th" id={labelId} scope="row" padding="none">
@@ -339,22 +444,17 @@ export default function UsersList() {
                                             <TableCell align="left">{row.lastname}</TableCell>
                                             <TableCell align="left">{row.email}</TableCell>
                                             <TableCell align="left">{row.phone}</TableCell>
-                                            <TableCell align="center">{row.isCreator ? "true":"false"}</TableCell>
-                                            <TableCell align="center">{row.isBlocked? "true":"false"}</TableCell>
+                                            <TableCell align="center">{row.isCreator ? "true" : "false"}</TableCell>
+                                            <TableCell align="center">{row.isBlocked ? "true" : "false"}</TableCell>
                                             <TableCell align="left">{row.ref_Auth}</TableCell>
                                         </TableRow>
                                     );
                                 })}
-                            {emptyRows > 0 && (
-                                <TableRow style={{ height: (53) * emptyRows }}>
-                                    <TableCell colSpan={6} />
-                                </TableRow>
-                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[8, 20, 50]}
                     component="div"
                     count={users.length}
                     rowsPerPage={rowsPerPage}

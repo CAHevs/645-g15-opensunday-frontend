@@ -8,6 +8,7 @@ import endpoints from "../endpoints.json";
 import * as Yup from "yup";
 import {UserContext} from "../utils/UserContext";
 import {useAuth0} from "@auth0/auth0-react";
+import {useSnackbar} from 'notistack';
 
 
 export default function ReportModal(props) {
@@ -16,6 +17,8 @@ export default function ReportModal(props) {
     let showReportModal = props.showReportModal;
     let filteredPastDates = props.filteredPastDate;
     let formatDate = props.formatDate;
+
+    const { enqueueSnackbar } = useSnackbar();
 
     let {getAccessTokenSilently} = useAuth0();
 
@@ -35,12 +38,13 @@ export default function ReportModal(props) {
 
         if (response === 409) {
             handleClose();
-            return alert("You already reported something for this location and this date! Please choose another date.");
+            enqueueSnackbar('You already reported something for this location and this date! Please choose another date.', {variant: 'error'})
+            return ;
         }
 
         console.log("Successfully added this new report: " + report);
         handleClose();
-        return alert("Your report has successfully been transmitted. Thank you !");
+        return enqueueSnackbar("Your report has successfully been transmitted. Thank you !", {variant: 'success'});
     }
 
     return (

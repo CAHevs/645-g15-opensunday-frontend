@@ -21,6 +21,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import {useHistory, useParams} from "react-router-dom";
 import ReportModal from "./ReportModal";
 import AddLocationModal from "./AddLocationModal";
+import {useSnackbar} from "notistack";
 
 
 export default function LocationsList(props) {
@@ -38,7 +39,7 @@ export default function LocationsList(props) {
     let [locationToShow, setLocationToShow] = useState(null);
     let [disabledRating, setDisabledRating] = useState(false);
 
-
+    const { enqueueSnackbar } = useSnackbar();
     const userContext = useContext(UserContext);
     const history = useHistory();
 
@@ -96,7 +97,7 @@ export default function LocationsList(props) {
 
         if (filteredPastDates === null) {
             handleClose();
-            alert("A report for this location is not possible");
+            enqueueSnackbar('You already reported something for this location and this date! Please choose another date.', {variant: 'warning'})
         } else {
             setShowReportModal(true);
         }
@@ -155,14 +156,14 @@ export default function LocationsList(props) {
             getAccessTokenSilently, JSON.stringify(rateToPost));
 
         if (response === 409) {
-            return alert("You have already done a rating for this location");
+            return enqueueSnackbar('You have already done a rating for this location', {variant: 'warning'});
         }
 
         setShowSendRating(false);
         setDisabledRating(false);
         await getAverageRatingForLocation(locationToShow.id);
         await getRatingByUser(locationToShow.id, userContext.userAuthenticated.id);
-        return alert("Your rating has successfully been transmitted. Thank you !");
+        return enqueueSnackbar('Your rating has successfully been transmitted. Thank you !', {variant: 'success'});
     }
 
     const handleClose = () => {

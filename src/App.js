@@ -90,7 +90,6 @@ function OpenSundayMap() {
 
     useEffect(() => {
         //Filter the list to re-render only the location from one city
-        console.log('2.change la ville', cityChoosed);
         if (cityChoosed !== null) {
             setFilteredLocationsByCity(locations.filter(location => location.id_City === cityChoosed.id));
         } else {
@@ -153,7 +152,7 @@ function OpenSundayMap() {
             <div className="map-container">
                 <div className="map-left">
                     {locations.length === 0 ? <Skeleton variant="rect" style={{height: "100vh", width: "100%"}}/>
-                        : <OpenMap locations={locations}
+                        : <OpenMap locations={filteredLocations}
                                    cities={cities}
                                    positionUser={userContext.userPosition}
                                    setCityChoosed={setCityChoosed}

@@ -10,17 +10,20 @@ import {UserContext} from "../utils/UserContext";
 import TextField from '@material-ui/core/TextField';
 import AddLocationModal from "../components/AddLocationModal";
 import DefineDatesModal from "../components/DefineDatesModal";
+import {useSnackbar} from "notistack";
 
 const columns = [
     {field: 'id', headerName: 'ID'},
-    {field: 'name', headerName: 'Location', width:250},
-    {field: 'address', headerName: 'Address', width:300},
-    {field: 'type',  headerName: 'Type', width: 150, valueGetter: (params) =>
-        `${params.getValue('type').description}`
-        },
+    {field: 'name', headerName: 'Location', width: 250},
+    {field: 'address', headerName: 'Address', width: 300},
+    {
+        field: 'type', headerName: 'Type', width: 150, valueGetter: (params) =>
+            `${params.getValue('type').description}`
+    },
     {field: 'url', headerName: 'Url', width: 300},
-    {field: 'city', headerName: 'City', valueGetter: (params) =>
-        `${params.getValue('city').name}`
+    {
+        field: 'city', headerName: 'City', valueGetter: (params) =>
+            `${params.getValue('city').name}`
     },
 ];
 
@@ -31,7 +34,7 @@ const sortModel = [
     },
 ];
 
-export default function ManageLocations(props){
+export default function ManageLocations(props) {
     let isAdmin = props.isAdmin;
     let [locations, setLocations] = useState([]);
     let [types, setTypes] = useState([]);
@@ -43,20 +46,21 @@ export default function ManageLocations(props){
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDelModal, setShowDelModal] = useState(false);
     const [showDefineDatesModal, setShowDefineDatesModal] = useState(false);
+    const {enqueueSnackbar} = useSnackbar();
     let delMod = false;
     let addMod = false;
 
     let userContext = useContext(UserContext);
 
     useEffect(() => {
-        if(userContext.userAuthenticated === null){
+        if (userContext.userAuthenticated === null) {
             return;
         }
         fetchLocations().catch();
     }, [userContext]);
 
     useEffect(() => {
-        let fetchEverything = async() => {
+        let fetchEverything = async () => {
             //await fetchLocations();
             await fetchTypes();
             await fetchCities();
@@ -79,39 +83,41 @@ export default function ManageLocations(props){
         getAccessTokenSilently
     } = useAuth0();
 
-    let fetchLocations = async() => {
+    let fetchLocations = async () => {
         locations = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
             getAccessTokenSilently);
-        if(!isAdmin){
-            locations = locations.filter(location => location.id_User===userContext.userAuthenticated.id);
+        if (!isAdmin) {
+            locations = locations.filter(location => location.id_User === userContext.userAuthenticated.id);
         }
         setLocations(locations);
     }
 
-    let fetchTypes = async() => {
+    let fetchTypes = async () => {
         types = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.type}`, getAccessTokenSilently);
         setTypes(types);
     }
 
-    let fetchCities = async() => {
+    let fetchCities = async () => {
         cities = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently);
         setCities(cities);
     }
 
-    let fetchCreator = async() =>  {
+    let fetchCreator = async () => {
         creators = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently)
     }
 
-    let updateLocation = async(path, token, updatedLocation) => {
+    let updateLocation = async (path, token, updatedLocation) => {
         await fetch(path, {
             method: 'PUT',
-            headers:{
+            headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: "application/json",
                 'Content-Type': "application/json",
 
             },
             body: updatedLocation,
+        }).then(() => {
+            enqueueSnackbar("Location successfully updated", {variant: 'success'})
         });
     };
 
@@ -124,19 +130,19 @@ export default function ManageLocations(props){
     }
 
     let handleEditClick = () => {
-        if(selection.length === 1){
+        if (selection.length === 1) {
             setShowEditModal(true);
-        }else{
-            alert("Please select one location !")
+        } else {
+            enqueueSnackbar("Please select one location !", {variant: 'warning'})
         }
 
     }
     let handleDefineDates = () => {
-        if(selection.length === 1){
+        if (selection.length === 1) {
             setLocationToDefineDates(selection[0]);
             setShowDefineDatesModal(true);
-        }else{
-            alert("Please select one location !")
+        } else {
+            enqueueSnackbar("Please select one location !", {variant: 'warning'})
         }
 
     }
@@ -148,57 +154,58 @@ export default function ManageLocations(props){
         //let editedLocation = values[0];
         let editedLocation = editedValues;
         editedLocation["id"] = parseInt(id);
-        if(editedLocation["id_Type"] === ""){
+        if (editedLocation["id_Type"] === "") {
             editedLocation["id_Type"] = parseInt(values[0].id_Type);
         }
-        if(editedLocation["id_City"] === ""){
+        if (editedLocation["id_City"] === "") {
             editedLocation["id_City"] = parseInt(values[0].id_City);
         }
         editedLocation["id_User"] = userContext.userAuthenticated.id;
-        if(editedLocation["name"] === ""){
+        if (editedLocation["name"] === "") {
             editedLocation["name"] = values[0].name;
         }
-        if(editedLocation["address"] === ""){
+        if (editedLocation["address"] === "") {
             editedLocation["address"] = values[0].address;
         }
-        if(editedLocation["url"] === ""){
+        if (editedLocation["url"] === "") {
             editedLocation["url"] = values[0].url;
         }
 
         editedLocation = JSON.stringify(editedLocation);
 
-        let path = process.env.REACT_APP_SERVER_URL + endpoints.location +"/"+id;
+        let path = process.env.REACT_APP_SERVER_URL + endpoints.location + "/" + id;
         let token = await getAccessTokenSilently();
         await updateLocation(path, token, editedLocation);
         await handleClose();
     }
 
-    let handleDeleteClick = () =>{
-        if(selection.length == 1){
+    let handleDeleteClick = () => {
+        if (selection.length == 1) {
             delMod = true;
             setShowDelModal(true);
-        }else{
-            alert("Please select one location !");
+        } else {
+            enqueueSnackbar("Please select one location !", {variant: 'warning'})
         }
 
     }
 
-    let deleteLocation = async() =>{
+    let deleteLocation = async () => {
 
         const idToDelete = selection[0].id;
 
-        let path = process.env.REACT_APP_SERVER_URL + endpoints.location +"/"+idToDelete;
+        let path = process.env.REACT_APP_SERVER_URL + endpoints.location + "/" + idToDelete;
 
         let token = await getAccessTokenSilently();
 
         let response = fetch(path, {
             method: 'DELETE',
-            headers:{
+            headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: "application/json",
             }
         });
         delMod = false;
+        enqueueSnackbar("Location successfully deleted", {variant: 'success'})
         await handleClose();
     }
 
@@ -207,31 +214,35 @@ export default function ManageLocations(props){
         setShowAddModal(true);
     }
 
-    let setFieldValue = (field, newValue) =>{
-        if(field==='id_Type' || field==='id_City'){
+    let setFieldValue = (field, newValue) => {
+        if (field === 'id_Type' || field === 'id_City') {
             editedValues[field] = parseInt(newValue);
-        }else{
+        } else {
             editedValues[field] = newValue;
         }
     }
 
     const fieldSelectStyle = {
-        "border": 'none',
+        border: 'none',
         width: '24.5ch',
-        "padding-top":'20px',
-        "padding-bottom":'20px'
+        paddingTop: '20px',
+        paddingBottom: '20px'
     }
 
     return (
         <>
-            <h3 style={{color:"black"}}>All Locations</h3>
+            <h3 style={{color: "black"}}>{isAdmin ? "All Locations" : "My locations"}</h3>
             <p>
-                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleAddClick}>Add a new Location</Button>
-                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleEditClick}>Edit Selected Row</Button>
-                <Button variant="contained" color="primary" style={{margin:"1em"}} onClick={handleDefineDates}>Define Opened Dates</Button>
-                <Button variant="contained" color="secondary" style={{margin:"1em"}} onClick={handleDeleteClick}>Delete Selected Row</Button>
+                <Button variant="contained" color="primary" style={{margin: "1em"}} onClick={handleAddClick}>Add a new
+                    Location</Button>
+                <Button variant="contained" color="primary" style={{margin: "1em"}} onClick={handleEditClick}>Edit
+                    Selected Row</Button>
+                <Button variant="contained" color="primary" style={{margin: "1em"}} onClick={handleDefineDates}>Define
+                    Opened Dates</Button>
+                <Button variant="contained" color="secondary" style={{margin: "1em"}} onClick={handleDeleteClick}>Delete
+                    Selected Row</Button>
             </p>
-            <div className="datagrid-container" style={{  }}>
+            <div className="datagrid-container">
                 <DataGrid
                     rows={locations}
                     columns={columns}
@@ -246,6 +257,8 @@ export default function ManageLocations(props){
                 />
             </div>
             {selection == null ? null : (
+
+
                 <Modal show={showEditModal} onHide={handleClose}>
                     <Modal.Header closeButton>
                         <Modal.Title>Edit location : {selection.map(part => part.name)}</Modal.Title>
@@ -261,7 +274,8 @@ export default function ManageLocations(props){
                                     variant="outlined"
                                     onChange={value => setFieldValue('name', value.target.value)}
                                     defaultValue={selection.map(part => part.name)}
-                                /><br/>
+                                />
+                                <br/>
                                 <TextField
                                     type="text"
                                     name="address"
@@ -285,16 +299,14 @@ export default function ManageLocations(props){
                                     defaultValue={selection.map(part => part.url)}
                                 /><br/>
                                 <Field as="select" name="id_City" style={fieldSelectStyle}
-                                       onChange={value => setFieldValue('id_City', value.target.value)}>
+                                       onChange={value => setFieldValue('id_City', value.target.value)}
+                                >
                                     {cities.map(city =>
                                         <option key={city.id} value={city.id}>{city.name}</option>
                                     )}
 
-
                                 </Field><br/><br/>
-                                <Button variant="contained" color="primary" type="submit">
-                                    Edit
-                                </Button>
+                                <Button variant="contained" color="primary" type="submit">Edit</Button>
                             </Form>
                         </Formik>
                     </Modal.Body>
@@ -302,7 +314,7 @@ export default function ManageLocations(props){
                         <Button variant="contained" color="secondary" onClick={handleClose}>
                             Close
                         </Button>
-                        <Button variant="contained" color="primary">Edit</Button>
+
                     </Modal.Footer>
                 </Modal>
             )}
@@ -323,8 +335,11 @@ export default function ManageLocations(props){
                     </Modal.Footer>
                 </Modal>
             )}
-            {addMod === true ? false: (<AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/>)}
-            {showDefineDatesModal ? <DefineDatesModal showDefineDatesModal={showDefineDatesModal} handleClose={handleClose} location={locationToDefineDates}/> : null}
+            {addMod === true ? false : (
+                <AddLocationModal showAddModal={showAddModal} handleClose={handleClose} cities={cities}/>)}
+            {showDefineDatesModal ?
+                <DefineDatesModal showDefineDatesModal={showDefineDatesModal} handleClose={handleClose}
+                                  location={locationToDefineDates}/> : null}
         </>
     )
 }

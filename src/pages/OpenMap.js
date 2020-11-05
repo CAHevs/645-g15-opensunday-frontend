@@ -22,6 +22,7 @@ import { useHistory, useParams } from "react-router-dom";
 import Control from "react-leaflet-control";
 import NavigationTwoToneIcon from '@material-ui/icons/NavigationTwoTone';
 import useOnclickOutside from "react-cool-onclickoutside";
+import {useSnackbar} from "notistack";
 
 function OpenMap(props) {
 
@@ -86,6 +87,7 @@ function OpenMap(props) {
     });
 
     const setCityChoosed = props.setCityChoosed;
+
     //Auth0
     let {
         loginWithRedirect,
@@ -110,6 +112,7 @@ function OpenMap(props) {
     let { locationId } = useParams();
     let location = null;
 
+    const { enqueueSnackbar } = useSnackbar();
     const userContext = useContext(UserContext);
     const history = useHistory();
 
@@ -158,7 +161,7 @@ function OpenMap(props) {
     //Button find me
     const handleLocateMe = () => {
         if (userContext.userPosition === null || userContext.userPosition === "notAllowed") {
-            alert("We couldn't locate you :( Can you refresh the page ?")
+            enqueueSnackbar("We couldn't locate you :( Can you refresh the page ?", {variant: "warning"})
         } else {
             setmapCenter(userContext.userPosition);
             history.push("/");
@@ -199,7 +202,7 @@ function OpenMap(props) {
             <Map
                 className="map"
                 center={mapCenter}
-                zoom={17}
+                zoom={16}
             >
                 <Control position="topright">
                     <Autocomplete
