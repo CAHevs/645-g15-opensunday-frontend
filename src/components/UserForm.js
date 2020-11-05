@@ -4,7 +4,7 @@ import {Formik, Field, Form } from 'formik';
 import {useAuth0} from "@auth0/auth0-react";
 import endpoints from "../endpoints.json";
 import * as Yup from 'yup';
-
+import TextField from '@material-ui/core/TextField';
 
 function UserForm() {
 
@@ -89,32 +89,31 @@ function UserForm() {
                 {({errors, touched}) =>(
                     <Form>
                         <br/>
-                        <Field
+                        <TextField
                             /* Link the created ref to the title input */
                             type="text"
                             name="firstname"
-                            placeholder="Firstname"
+                            label="Firstname"
+                            variant="outlined"
                         />{errors.firstname && touched.firstname ? (
                             <div>{errors.firstname}</div>
                     ) : null}
                         <br/>
-                        <Field
+                        <TextField
                             type="text"
                             name="lastname"
-                            //value={values.lastname}
-                            //onChange={handleFormInputChange}
-                            placeholder="Lastname"
+                            label="Lastname"
+                            variant="outlined"
                         />
                         {errors.lastname && touched.lastname ? (
                             <div>{errors.lastname}</div>
                         ) : null}
                         <br/>
-                        <Field
+                        <TextField
                             type="number"
                             name="phone"
-                            //value={this.state.newUser.phone}
-                            //onChange={handleFormInputChange}
-                            placeholder="Phone number"
+                            label="Phone number"
+                            variant="outlined"
                         />
                         {errors.phone && touched.phone ? (
                             <div>{errors.phone}</div>

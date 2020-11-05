@@ -7,6 +7,8 @@ import {UserContext} from "../utils/UserContext";
 import * as Yup from "yup";
 import request from "../utils/request";
 import {useAuth0} from "@auth0/auth0-react";
+import TextField from '@material-ui/core/TextField';
+
 
 export default function AddLocationModal(props) {
     let showAddModal = props.showAddModal;
@@ -131,6 +133,13 @@ export default function AddLocationModal(props) {
         await handleClose();
     }
 
+    const fieldSelectStyle = {
+        "border": 'none',
+        width: '24.5ch',
+        "padding-top":'20px',
+        "padding-bottom":'20px'
+    }
+
     return (
         <>
             <Formik initialValues={initialValues}
@@ -144,58 +153,63 @@ export default function AddLocationModal(props) {
                         </Modal.Header>
                         <Modal.Body>
                             <Form>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="name"
-                                    placeholder="Location name"
+                                    label="Location name"
+                                    variant="outlined"
                                 />
                                 {errors.name && touched.name ? (
                                     <div>{errors.name}</div>
                                 ) : null}
                                 <br/>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="address"
-                                    placeholder="Address"
+                                    label="Address"
+                                    variant="outlined"
                                 />
                                 {errors.address && touched.address ? (
                                     <div>{errors.address}</div>
                                 ) : null}
                                 <br/>
-                                <Field as="select" name="id_Type">
+                                <Field as="select" name="id_Type" style={fieldSelectStyle}>
                                     {types.map(type =>
                                         <option key={type.id} value={type.id}>{type.description}</option>
                                     )}
                                 </Field>
                                 <br/>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="url"
-                                    placeholder="Url"
+                                    label="Url"
+                                    variant="outlined"
                                 />
                                 {errors.url && touched.url ? (
                                     <div>{errors.url}</div>
                                 ) : null}
                                 <br/>
-                                <Field
+                                <TextField
                                     type="number"
                                     name="lat"
-                                    placeholder="Lat"
+                                    label="Lat"
+                                    variant="outlined"
                                 />
                                 {errors.lat && touched.lat ? (
                                     <div>{errors.lat}</div>
                                 ) : null}
                                 <br/>
-                                <Field
+                                <TextField
                                     type="number"
                                     name="lng"
-                                    placeholder="Lng"
+                                    label="Lng"
+                                    variant="outlined"
                                 />
                                 {errors.lng && touched.lng ? (
                                     <div>{errors.lng}</div>
                                 ) : null}
                                 <br/>
-                                <Field as="select" name="id_City">
+                                <Field as="select" name="id_City" style={fieldSelectStyle}>
                                     {cities.map(city =>
                                         <option key={city.id} value={city.id}>{city.name}</option>
                                     )}

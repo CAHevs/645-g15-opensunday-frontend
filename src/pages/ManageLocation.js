@@ -7,7 +7,7 @@ import Button from "@material-ui/core/Button";
 import Modal from "react-bootstrap/Modal";
 import {Field, Form, Formik} from "formik";
 import {UserContext} from "../utils/UserContext";
-import * as Yup from "yup";
+import TextField from '@material-ui/core/TextField';
 import AddLocationModal from "../components/AddLocationModal";
 import DefineDatesModal from "../components/DefineDatesModal";
 
@@ -215,6 +215,13 @@ export default function ManageLocations(props){
         }
     }
 
+    const fieldSelectStyle = {
+        "border": 'none',
+        width: '24.5ch',
+        "padding-top":'20px',
+        "padding-bottom":'20px'
+    }
+
     return (
         <>
             <h3 style={{color:"black"}}>All Locations</h3>
@@ -245,42 +252,49 @@ export default function ManageLocations(props){
                     </Modal.Header>
                     <Modal.Body>
                         <Formik initialValues={selection}
-                            onSubmit={values => (handleEditSubmit(values))}
+                                onSubmit={values => (handleEditSubmit(values))}
                         >
                             <Form>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="name"
+                                    variant="outlined"
                                     onChange={value => setFieldValue('name', value.target.value)}
                                     defaultValue={selection.map(part => part.name)}
                                 /><br/>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="address"
+                                    variant="outlined"
                                     onChange={value => setFieldValue('address', value.target.value)}
                                     defaultValue={selection.map(part => part.address)}
                                 /><br/>
-                                <Field as="select" name="id_Type"
+                                <Field as="select" name="id_Type" style={fieldSelectStyle}
                                        onChange={value => setFieldValue('id_Type', value.target.value)}
                                 >
                                     {types.map(type =>
-                                    <option key={type.id} value={type.id}>{type.description}</option>
+                                        <option key={type.id} value={type.id}>{type.description}</option>
                                     )}
 
                                 </Field><br/>
-                                <Field
+                                <TextField
                                     type="text"
                                     name="url"
+                                    variant="outlined"
                                     onChange={value => setFieldValue('url', value.target.value)}
                                     defaultValue={selection.map(part => part.url)}
                                 /><br/>
-                                <Field as="select" name="id_City" onChange={value => setFieldValue('id_City', value.target.value)}>
+                                <Field as="select" name="id_City" style={fieldSelectStyle}
+                                       onChange={value => setFieldValue('id_City', value.target.value)}>
                                     {cities.map(city =>
-                                    <option key={city.id} value={city.id}>{city.name}</option>
+                                        <option key={city.id} value={city.id}>{city.name}</option>
                                     )}
 
 
                                 </Field><br/><br/>
+                                <Button variant="contained" color="primary" type="submit">
+                                    Edit
+                                </Button>
                             </Form>
                         </Formik>
                     </Modal.Body>
@@ -288,9 +302,7 @@ export default function ManageLocations(props){
                         <Button variant="contained" color="secondary" onClick={handleClose}>
                             Close
                         </Button>
-                        <Button variant="contained" color="primary" type="submit">
-                            Edit
-                        </Button>
+                        <Button variant="contained" color="primary">Edit</Button>
                     </Modal.Footer>
                 </Modal>
             )}
