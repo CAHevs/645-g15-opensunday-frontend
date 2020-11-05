@@ -73,7 +73,6 @@ export default function LocationsList(props) {
 
         let filterPastDates = () => {
             let pastDates = [];
-            //console.log("1loc :"+locationPerDate);
             if (locationPerDate.length === 0)
                 return;
             locationPerDate.forEach((openedDate) => {
@@ -81,14 +80,12 @@ export default function LocationsList(props) {
                     pastDates.push(openedDate.date);
                 }
             });
-            //console.log("2pastdates :"+pastDates);
             if (pastDates.length !== 0) {
                 pastDates.sort((a, b) => {
                     return new Date(b.selected_Date) - new Date(a.selected_Date);
                 });
                 setFilteredPastDates(pastDates);
                 filteredPastDates = pastDates;
-                //console.log("3filteredPastDates : "+filteredPastDates);
             }
         }
 
@@ -108,7 +105,6 @@ export default function LocationsList(props) {
             return;
         let filterFutureDates = () => {
             let futureDates = [];
-            //console.log("1loc :" + locationPerDate);
             if (locationPerDate.length === 0) {
                 setFilteredFutureDates(null);
                 filteredFutureDates = null;
@@ -116,7 +112,6 @@ export default function LocationsList(props) {
             }
 
             futureDates = locationPerDate.filter(a => new Date(a.date.selected_Date) >= new Date().setHours(0, 0, 0, 0));
-            //console.log("2futuredates :" + futureDates);
             if (futureDates !== null) {
                 futureDates.sort((a, b) => {
                     return new Date(a.selected_Date) - new Date(b.selected_Date);

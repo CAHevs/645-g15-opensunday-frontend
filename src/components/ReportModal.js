@@ -30,7 +30,6 @@ export default function ReportModal(props) {
 
     const handleReportSubmit = async (report) => {
         report.Report_Date = new Date().toISOString();
-        console.log('report to post', report)
 
         let response = await postRequest(
             `${process.env.REACT_APP_SERVER_URL}${endpoints.reporting}`,
@@ -41,8 +40,6 @@ export default function ReportModal(props) {
             enqueueSnackbar('You already reported something for this location and this date! Please choose another date.', {variant: 'error'})
             return ;
         }
-
-        console.log("Successfully added this new report: " + report);
         handleClose();
         return enqueueSnackbar("Your report has successfully been transmitted. Thank you !", {variant: 'success'});
     }

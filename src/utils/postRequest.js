@@ -12,10 +12,8 @@ export default async function (url, getAccessTokenSilently, objectToPost) {
             },
             body: objectToPost
         });
-        console.log(response);
         if(response.ok){
             let data = await response.json();
-            console.log(data);
             return data;
         }
         if(response.status === 409){

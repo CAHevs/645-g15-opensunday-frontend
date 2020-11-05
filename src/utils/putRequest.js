@@ -12,7 +12,6 @@ export default async function (url, getAccessTokenSilently, objectToUpdate) {
             },
             body: objectToUpdate
         });
-        console.log(response);
         return response.status;
     } catch (e) {
         console.error(e);

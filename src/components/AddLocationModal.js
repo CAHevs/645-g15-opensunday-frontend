@@ -68,7 +68,6 @@ export default function AddLocationModal(props) {
     })
 
     let handleAddSubmit = async (values) => {
-        console.log('values', values);
 
         let newLocation = values;
 

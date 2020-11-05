@@ -8,11 +8,9 @@ export default async function (url, getAccessTokenSilently) {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
     //If status code between 200-299
     if(response.ok){
       let data = await response.json();
-      console.log(data);
       return data;
     }
     if(response.status===404){

@@ -118,7 +118,6 @@ function OpenMap(props) {
 
     const ref = useOnclickOutside(() => {
         setOpenMarker(false);
-        console.log("clique en dehors");
     });
 
 

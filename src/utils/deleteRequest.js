@@ -10,7 +10,6 @@ export default async function (url, getAccessTokenSilently) {
 
             },
         });
-        console.log(response);
         return response.status;
     } catch (e) {
         console.error(e);

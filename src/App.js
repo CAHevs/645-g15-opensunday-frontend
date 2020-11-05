@@ -84,7 +84,6 @@ function OpenSundayMap() {
     }, []);
 
     useEffect(() => {
-        console.log('5.la liste filtrée', filteredLocationsByCity);
         filterArray().catch();
     }, [filteredLocationsByCity]);
 

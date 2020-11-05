@@ -85,7 +85,6 @@ export default function DefineDatesModal(props) {
         const sorted = right.concat(leftChecked).sort((a, b) => {
             return new Date(a.selected_Date) - new Date(b.selected_Date);
         });
-        console.log('sorted right', sorted);
         setRight(sorted);
         setLeft(not(left, leftChecked));
         setChecked(not(checked, leftChecked));
@@ -95,7 +94,6 @@ export default function DefineDatesModal(props) {
         const sorted = left.concat(rightChecked).sort((a, b) => {
             return new Date(a.selected_Date) - new Date(b.selected_Date);
         });
-        console.log('sorted left', sorted);
         setLeft(sorted);
         setRight(not(right, rightChecked));
         setChecked(not(checked, rightChecked));
@@ -257,11 +255,6 @@ export default function DefineDatesModal(props) {
         } else {
             enqueueSnackbar('Oops ! Something went wrong. Please try again or contact the administrator(admin@opensunday.ch).', {variant:"error"});
         }
-
-        console.log('datesToDelete', datesToDelete);
-        console.log('datesToAdd', datesToAdd);
-
-
     }
 
     const handleModalClose = (event) => {
