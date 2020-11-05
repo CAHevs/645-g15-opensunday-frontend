@@ -215,6 +215,7 @@ function App() {
 
     let [isCreator, setIsCreator] = useState(false);
     let [isAdmin, setIsAdmin] = useState(false);
+    let [isBlocked, setIsBlocked] = useState(false);
 
     let userContext = useContext(UserContext);
 
@@ -233,6 +234,9 @@ function App() {
         }
         if (userContext.userAuthenticated.isCreator) {
             setIsCreator(true);
+        }
+        if(userContext.userAuthenticated.isBlocked){
+            setIsBlocked(true);
         }
         if(userContext.userAuthenticated.id != null){
             fetchAdmin().catch();
@@ -278,77 +282,83 @@ function App() {
     }
 
     return (
-        <BrowserRouter>
-            <div className="App">
-                <header>
-                    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-                        <Navbar.Brand><NavLink to="/" className="homeLinks">OpenSunday</NavLink></Navbar.Brand>
-                        <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
-                        <Navbar.Collapse id="responsive-navbar-nav">
-                            <Nav className="mr-auto">
-                                {userContext.userAuthenticated ? null : (
-                                    <NavLink to="/UserForm" className="navLinks">Register</NavLink>
-                                )}
-                                {isCreator ? (
-                                        isAdmin ? (
-                                                <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
-                                            ) : <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
+                <BrowserRouter>
+                    <div className="App">
+                        <header>
+                            <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+                                <Navbar.Brand><NavLink to="/" className="homeLinks">OpenSunday</NavLink></Navbar.Brand>
+                                <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
+                                <Navbar.Collapse id="responsive-navbar-nav">
 
-                                ) : null}
+                                    {isBlocked ? null :
+                                        <Nav className="mr-auto">
+                                            {userContext.userAuthenticated ? null : (
+                                                <NavLink to="/UserForm" className="navLinks">Register</NavLink>
+                                            )}
+                                            {isCreator ? (
+                                                isAdmin ? (
+                                                    <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
+                                                ) : <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
 
-                            </Nav>
-                            {isAuthenticated ? (
-                                    /*If the user is authenticated*/
-                                    <a
-                                        className="App-link Logout-link navLinks"
-                                        href="#"
-                                        onClick={handleLogoutClick}
-                                    >Logout
-                                    </a>
+                                            ) : null}
 
-                                ) :
-                                //if the user isn't authenticated */
-                                <a className="App-link Logout-link"
-                                   href="#"
-                                   onClick={handleLoginClick}
-                                >Login
-                                </a>
-                            }
+                                        </Nav>
+                                    }
 
-                        </Navbar.Collapse>
-                    </Navbar>
-                </header>
-                <div className="App-body">
-                    <Switch>
-                        <Route exact path="/">
-                            {isAuthenticated ? <OpenSundayMap/> : (
-                                <div>
-                                    <br/>
-                                    <h1>Welcome to OpenSunday, please log in</h1>
-                                    <br/>
-                                    <Button variant="contained" color="primary"
-                                            onClick={handleLoginClick}>Login</Button>
-                                </div>
-                            )}
-                        </Route>
-                        <Route exact path="/location/:locationId">
-                            {isAuthenticated ? <OpenSundayMap/> : (
-                                <div>
-                                    <h1>Welcome to OpenSunday, please log in</h1>
-                                    <Button variant="contained" color="primary"
-                                            onClick={handleLoginClick}>Login</Button>
-                                </div>
-                            )}
-                        </Route>
-                        <ProtectedRoute exact path="/UserForm" component={UserForm}/>
-                        <ProtectedRoute exact path="/Admin" component={Administrator}/>
-                        <ProtectedRoute exact path="/ManageLocation" >
-                            <ManageLocation isAdmin={false}/>
-                        </ProtectedRoute>
-                    </Switch>
-                </div>
-            </div>
-        </BrowserRouter>
+
+                                    {isAuthenticated ? (
+                                        /*If the user is authenticated*/
+                                        <a
+                                            className="App-link Logout-link navLinks"
+                                            href="#"
+                                            onClick={handleLogoutClick}
+                                        >Logout
+                                        </a>
+
+                                    ) : (
+                                        //if the user isn't authenticated */
+                                        <a className="App-link Logout-link"
+                                           href="#"
+                                           onClick={handleLoginClick}
+                                        >Login
+                                        </a>)}
+                                </Navbar.Collapse>
+                            </Navbar>
+                        </header>
+                        {isBlocked ? <p>You are Blocked ! Please contact the administrator</p> :
+                            <div className="App-body">
+                                <Switch>
+                                    <Route exact path="/">
+                                        {isAuthenticated ? <OpenSundayMap/> : (
+                                            <div>
+                                                <br/>
+                                                <h1>Welcome to OpenSunday, please log in</h1>
+                                                <br/>
+                                                <Button variant="contained" color="primary"
+                                                        onClick={handleLoginClick}>Login</Button>
+                                            </div>
+                                        )}
+                                    </Route>
+                                    <Route exact path="/location/:locationId">
+                                        {isAuthenticated ? <OpenSundayMap/> : (
+                                            <div>
+                                                <h1>Welcome to OpenSunday, please log in</h1>
+                                                <Button variant="contained" color="primary"
+                                                        onClick={handleLoginClick}>Login</Button>
+                                            </div>
+                                        )}
+                                    </Route>
+                                    <ProtectedRoute exact path="/UserForm" component={UserForm}/>
+                                    <ProtectedRoute exact path="/Admin" component={Administrator}/>
+                                    <ProtectedRoute exact path="/ManageLocation" >
+                                        <ManageLocation isAdmin={false}/>
+                                    </ProtectedRoute>
+                                </Switch>
+                            </div>
+                        }
+
+                    </div>
+                </BrowserRouter>
     );
 }
 
