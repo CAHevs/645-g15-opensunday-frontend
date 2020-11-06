@@ -213,6 +213,7 @@ export default function ManageLocations(props) {
 
     }
 
+
     //Method that will delete a location depending on the
     //id of the selected row in the datagrid
     let deleteLocation = async () => {
@@ -223,15 +224,43 @@ export default function ManageLocations(props) {
 
         let token = await getAccessTokenSilently();
 
-        let response = fetch(path, {
+        //Remove locations per date first
+        let locationPerDate = await request(
+            `${process.env.REACT_APP_SERVER_URL}${endpoints.location_per_date}/${idToDelete}/byLocation`,
+            getAccessTokenSilently);
+        if (locationPerDate !== 404){
+            let datesToDelete = [];
+            locationPerDate.forEach(locationPerDate => {
+               datesToDelete.push({
+                   id_Location: locationPerDate.id_Location,
+                   id_Date: locationPerDate.id_Date
+               });
+            });
+            let responseDelete = await fetch(`${process.env.REACT_APP_SERVER_URL}${endpoints.location_per_date}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                    'Content-Type': "application/json",
+                },
+                body: JSON.stringify(datesToDelete)
+            });
+
+        }
+
+        let response = await fetch(path, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: "application/json",
             }
         });
+        if(response===500){
+            enqueueSnackbar("Please remove the opened date first !", {variant: 'error'});
+        }else{
+            enqueueSnackbar("Location successfully deleted", {variant: 'success'});
+        }
         delMod = false;
-        enqueueSnackbar("Location successfully deleted", {variant: 'success'})
         await handleClose();
     }
 
