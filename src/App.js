@@ -324,13 +324,9 @@ function App() {
                                             {userContext.userAuthenticated ? null : (
                                                 <NavLink to="/UserForm" className="navLinks">Register</NavLink>
                                             )}
-                                            {isCreator ? (
-                                                isAdmin ? (
+                                            {isAdmin ? (
                                                     <NavLink to="/Admin" className="navLinks">Administrator</NavLink>
-                                                ) : <NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>
-
-                                            ) : null}
-
+                                            ) : isCreator ? (<NavLink to="/ManageLocation" className="navLinks">Manage Locations</NavLink>) : null}
                                         </Nav>
                                     }
 
