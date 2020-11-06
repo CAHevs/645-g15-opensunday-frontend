@@ -11,6 +11,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import SimpleBar from "simplebar-react";
 import {Grid} from "@material-ui/core";
 
+//Create some styles
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
@@ -45,16 +46,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function ReportsList() {
-    const classes = useStyles();
-    let [reports, setReports] = useState([]);
-    let {getAccessTokenSilently} = useAuth0();
+    //Create the state values
     const [expanded, setExpanded] = React.useState(false);
+    let [reports, setReports] = useState([]);
+
+    //Hooks
+    const {getAccessTokenSilently} = useAuth0();
+    const classes = useStyles();
 
     const handleChange = (panel) => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
 
     useEffect(() => {
+        //Get all the reports sorted by report date
         let getAllReports = async (e) => {
             let reportsResponse = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.reporting}`, getAccessTokenSilently);
@@ -71,6 +76,7 @@ export default function ReportsList() {
     }, []);
 
     let formatDate = (selected_Date) => {
+        //Format the date
         const date = Date.parse(selected_Date);
         return new Intl.DateTimeFormat('en-gb', {day: 'numeric', month: 'long', year: 'numeric'}).format(date);
     };

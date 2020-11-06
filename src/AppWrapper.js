@@ -3,7 +3,7 @@ import auth_config from "./auth_config";
 import {UserContext} from "./utils/UserContext";
 import App from "./App";
 import React from "react";
-import {SnackbarProvider, useSnackbar} from 'notistack';
+import {SnackbarProvider} from 'notistack';
 
 
 class AppWrapper extends React.Component {
@@ -47,7 +47,6 @@ class AppWrapper extends React.Component {
                         <App className="App"/>
                     </SnackbarProvider>
                 </UserContext.Provider>
-
             </Auth0Provider>
         );
     }

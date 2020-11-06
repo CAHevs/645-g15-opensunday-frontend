@@ -1,9 +1,4 @@
 import React, {useContext, useState, useEffect} from 'react';
-import request from "../utils/request";
-import {useAuth0} from "@auth0/auth0-react";
-import endpoints from "../endpoints";
-import {Link} from "react-router-dom";
-import logo from '../logo.svg';
 import L from 'leaflet';
 import {Map, TileLayer, Marker, Popup} from 'react-leaflet';
 import redPin from '../assets/redPin.png';
@@ -15,7 +10,6 @@ import CinemaPin from '../assets/CinemaPin.png';
 import {UserContext} from "../utils/UserContext"
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from "@material-ui/core/TextField";
-import Loading from '../components/Loading';
 import {EmailIcon} from "react-share";
 import {Button} from '@material-ui/core';
 import {useHistory, useParams} from "react-router-dom";
@@ -43,16 +37,6 @@ function OpenMap(props) {
     let Museum = new LeafIcon({iconUrl: MuseumPin});
 
     const setCityChoosed = props.setCityChoosed;
-
-    //Auth0
-    let {
-        loginWithRedirect,
-        getAccessTokenSilently,
-        user,
-    } = useAuth0();
-
-
-    let [selectedCity, setSelectedCity] = useState(null);
 
     //By default, the center of the map is at Sion, Valais
     let [mapCenter, setmapCenter] = useState([46.2333, 7.35]);
@@ -164,7 +148,6 @@ function OpenMap(props) {
                                                             style={{backgroundColor: "white", borderRadius: "6px"}}/>}
                     />
                 </Control>
-                {/* Display the button FindMe if the user authorizes it*/}
                 {userContext.userPosition === null || userContext.userPosition === "notAllowed" ? null : (
                     <Control position="bottomright">
                         <Button size="small" variant="contained" onClick={handleLocateMe}>Find
@@ -177,13 +160,9 @@ function OpenMap(props) {
                 />
                 {
                     locations.map((loc) =>
-                        //Get latitude and longitude from each location and display it in a Marker on the map
+
                         <Marker key={`marker-${loc.id}`} position={[loc.lat, loc.lng]}
-
-                            //Define the icon from the type of the loc
                                 icon={eval(loc.type.description)}
-
-                            //Change the url with location id by clicking
                                 onClick={(event) => handleClick(event, loc)}
                         >
                             <Popup>
@@ -199,8 +178,6 @@ function OpenMap(props) {
                             </Popup>
                         </Marker>
                     )}
-
-                {/* Display the redPin form user's location if it exists */}
                 {!(userContext.userPosition === null || userContext.userPosition === "notAllowed") &&
                 <Marker
                     position={userContext.userPosition}

@@ -27,6 +27,7 @@ import putRequest from "../utils/putRequest";
 import deleteRequest from "../utils/deleteRequest";
 import {useSnackbar} from "notistack";
 
+//Function used to compare given values
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
         return -1;
@@ -36,7 +37,7 @@ function descendingComparator(a, b, orderBy) {
     }
     return 0;
 }
-
+//Function to sort the array by the column choosed
 function stableSort(array, comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
@@ -64,8 +65,11 @@ function getComparator(order, orderBy) {
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
+//Component of the table head
 function EnhancedTableHead(props) {
+    //Get all the props
     const {classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort} = props;
+    //Sort all
     const createSortHandler = (property) => (event) => {
         onRequestSort(event, property);
     };
@@ -107,6 +111,7 @@ function EnhancedTableHead(props) {
     );
 }
 
+//Define the type and the required propTypes for enhanced table head
 EnhancedTableHead.propTypes = {
     classes: PropTypes.object.isRequired,
     numSelected: PropTypes.number.isRequired,
@@ -117,6 +122,7 @@ EnhancedTableHead.propTypes = {
     rowCount: PropTypes.number.isRequired,
 };
 
+//Create some styles
 const useToolbarStyles = makeStyles((theme) => ({
     root: {
         paddingLeft: theme.spacing(2),
@@ -137,14 +143,18 @@ const useToolbarStyles = makeStyles((theme) => ({
     },
 }));
 
+//Component of the toolbar
 const EnhancedTableToolbar = (props) => {
+    //Get the style classes
     const classes = useToolbarStyles();
+    //Get the props
     const {usersSelected, setSelected, setUsersListRefresh} = props;
+    //Value states
     let [showDeleteUsersModal, setShowDeleteUsersModal] = useState(false);
     let [showBlockUsersModal, setShowBlockUsersModal] = useState(false);
 
+    //Hooks
     const {enqueueSnackbar} = useSnackbar();
-
     const {getAccessTokenSilently} = useAuth0();
 
     //Methods Delete and Put
@@ -155,20 +165,24 @@ const EnhancedTableToolbar = (props) => {
         return await deleteRequest(`${process.env.REACT_APP_SERVER_URL}${endpoints.user}/${userToDelete.id}`, getAccessTokenSilently);
     };
 
+    //Show the delete users modal when the corresponding button is clicked
     let handleDeleteUsersClick = (event) => {
         event.preventDefault();
         setShowDeleteUsersModal(true);
 
     }
+    //Close the delete users modal when the corresponding button is clicked
     let handleCloseDeleteUsersModal = (event) => {
         event.preventDefault();
         setShowDeleteUsersModal(false);
     }
+    //Show the block users modal when the corresponding button is clicked
     let handleBlockUsersClick = (event) => {
         event.preventDefault();
         setShowBlockUsersModal(true);
 
     }
+    //Close the block users modal when the corresponding button is clicked
     let handleCloseBlockUsersModal = (event) => {
         event.preventDefault();
         setShowBlockUsersModal(false);
@@ -176,6 +190,7 @@ const EnhancedTableToolbar = (props) => {
 
 
     let blockUsers = (event) => {
+        //Inverse the value of isBlocked fo each user select and update them in the backend
         event.preventDefault();
         usersSelected.forEach(userToUpdate => {
             userToUpdate.isBlocked = !userToUpdate.isBlocked;
@@ -192,6 +207,7 @@ const EnhancedTableToolbar = (props) => {
         setShowBlockUsersModal(false);
     }
     let deleteUsers = (event) => {
+        //Delete all the users but not the ones that are creators
         event.preventDefault();
         usersSelected.forEach(userToDelete => {
             if (userToDelete.isCreator) {
@@ -287,6 +303,7 @@ const EnhancedTableToolbar = (props) => {
     );
 };
 
+//Table Toolbar
 EnhancedTableToolbar.propTypes = {
     usersSelected: PropTypes.array.isRequired,
     setUsersListRefresh: PropTypes.func.isRequired,
@@ -317,7 +334,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function UsersList() {
+    //Get the style classes
     const classes = useStyles();
+
+    //Create all the state values
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('id');
     const [selected, setSelected] = React.useState([]);
@@ -325,12 +345,14 @@ export default function UsersList() {
     const [dense, setDense] = React.useState(false);
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
     const [usersListRefresh, setUsersListRefresh] = React.useState(true);
-
     let [users, setUsers] = useState([]);
+
+    //Hooks
     let {getAccessTokenSilently} = useAuth0();
 
 
     useEffect(() => {
+        //Get all the users
         let getAllUsers = async (e) => {
             let users = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.user}`, getAccessTokenSilently);
@@ -346,12 +368,14 @@ export default function UsersList() {
     }, [usersListRefresh]);
 
     const handleRequestSort = (event, property) => {
+        //Sort on the choosed column
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
 
     const handleSelectAllClick = (event) => {
+        //Handle when the select all box is checked
         if (event.target.checked) {
             const newSelecteds = users.map((user) => user);
             setSelected(newSelecteds);
@@ -361,6 +385,7 @@ export default function UsersList() {
     };
 
     const handleClick = (event, row) => {
+        //Handle when row is selected
         const selectedIndex = selected.indexOf(row);
         let newSelected = [];
 
@@ -380,18 +405,17 @@ export default function UsersList() {
     };
 
     const handleChangePage = (event, newPage) => {
+        //Set when we change the page
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
+        //Set when we change number of rows per page
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
     const isSelected = (row) => selected.indexOf(row) !== -1;
-
-    //const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
-
 
     return (
         <>

@@ -12,23 +12,25 @@ import {useSnackbar} from 'notistack';
 
 
 export default function ReportModal(props) {
+    //Get all values and functions from the props
     let locationToReport = props.locationToReport;
     let handleClose = props.handleClose;
     let showReportModal = props.showReportModal;
     let filteredPastDates = props.filteredPastDate;
     let formatDate = props.formatDate;
 
+    //Hooks
     const { enqueueSnackbar } = useSnackbar();
-
     let {getAccessTokenSilently} = useAuth0();
-
     let userContext = useContext(UserContext);
 
+    //Set the validation schema to send the report
     const reportingValidationSchema = Yup.object({
         Comment: Yup.string().required()
     });
 
     const handleReportSubmit = async (report) => {
+        //Post the report
         report.Report_Date = new Date().toISOString();
 
         let response = await postRequest(
@@ -36,6 +38,7 @@ export default function ReportModal(props) {
             getAccessTokenSilently, JSON.stringify(report));
 
         if (response === 409) {
+            //Handle the case of conflict
             handleClose();
             enqueueSnackbar('You already reported something for this location and this date! Please choose another date.', {variant: 'error'})
             return ;

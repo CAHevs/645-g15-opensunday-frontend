@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import ManageLocation from "./ManageLocation";
-import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';
 import UsersList from "../components/UsersList";
 import ReportsList from "../components/ReportsList";
 
 function TabPanel(props) {
+    //Set panels
     const { children, value, index, ...other } = props;
 
     return (
@@ -31,23 +31,17 @@ function TabPanel(props) {
 
 export default function Administrator() {
 
-    useEffect(()=>{
-
-    },[] );
-
+    //Create the state values
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
+        //Handle the change tab
         setValue(newValue);
-    };
-    const handleChangeIndex = (index) => {
-        setValue(index);
     };
 
     return (
         <>
             <div className="administrator">
-
                 <Paper >
                     <Tabs
                         value={value}
