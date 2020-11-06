@@ -10,6 +10,7 @@ import {useAuth0} from "@auth0/auth0-react";
 import TextField from '@material-ui/core/TextField';
 import Label from '@material-ui/core/InputLabel';
 import {useSnackbar} from "notistack";
+import putRequest from "../utils/putRequest";
 
 //Function that will be called to show a Modal Form for adding a new location
 export default function AddLocationModal(props) {
@@ -110,36 +111,18 @@ export default function AddLocationModal(props) {
             },
             body: newLocation,
         });
-
-        /*update isCreator for the user if not already isCreator*/
         if (userContext.userAuthenticated.isCreator === false) {
-            let currentUser = {};
-            currentUser["id"] = userContext.userAuthenticated.id;
-            currentUser["firstname"] = userContext.userAuthenticated.firstname;
-            currentUser["lastname"] = userContext.userAuthenticated.lastname;
-            currentUser["email"] = userContext.userAuthenticated.email;
-            currentUser["phone"] = userContext.userAuthenticated.phone;
-            currentUser["isCreator"] = true;
-            currentUser["isBlocked"] = false;
-            currentUser["ref_Auth"] = userContext.userAuthenticated.ref_auth;
-
-
-            let path = process.env.REACT_APP_SERVER_URL + endpoints.user + "/" + userContext.userAuthenticated.id;
-
-            let token = await getAccessTokenSilently();
-
-            let response = await fetch(path, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                    'Content-Type': "application/json",
-
-                },
-                body: currentUser,
-            });
+            let currentUser = userContext.userAuthenticated;
+            currentUser.isCreator = true;
+            let responseUser = await putRequest(`${process.env.REACT_APP_SERVER_UR}${endpoints.user}/${userContext.userAuthenticated.id}`,
+                getAccessTokenSilently, JSON.stringify(currentUser));
+            userContext.setUserAuthenticated(currentUser);
         }
-        enqueueSnackbar("Location successfully added", {variant: 'success'});
+        if (response === 409) {
+            enqueueSnackbar('This location already exists.', {variant: 'error'});
+        } else {
+            enqueueSnackbar("Location successfully added", {variant: 'success'});
+        }
         await handleClose();
     }
 
@@ -173,68 +156,68 @@ export default function AddLocationModal(props) {
                                     label="Location name"
                                     variant="outlined"
                                     margin="dense"
-                                    render={({field}) => <TextField {...field} /> }
+                                    render={({field}) => <TextField {...field} />}
                                 />
                                 {errors.name && touched.name ? (
                                     <div>{errors.name}</div>
                                 ) : null}
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>Address</Label>
+                                <Label style={{paddingTop: '10px'}}>Address</Label>
                                 <Field
                                     type="text"
                                     name="address"
                                     label="Address"
                                     variant="outlined"
-                                    render={({field}) => <TextField {...field} /> }
+                                    render={({field}) => <TextField {...field} />}
                                 />
                                 {errors.address && touched.address ? (
                                     <div>{errors.address}</div>
                                 ) : null}
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>Type</Label>
+                                <Label style={{paddingTop: '10px'}}>Type</Label>
                                 <Field as="select" name="id_Type" style={fieldSelectStyle}>
                                     {types.map(type =>
                                         <option key={type.id} value={type.id}>{type.description}</option>
                                     )}
                                 </Field>
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>URL</Label>
+                                <Label style={{paddingTop: '10px'}}>URL</Label>
                                 <Field
                                     type="text"
                                     name="url"
                                     label="Url"
                                     variant="outlined"
-                                    render={({field}) => <TextField {...field} /> }
+                                    render={({field}) => <TextField {...field} />}
                                 />
                                 {errors.url && touched.url ? (
                                     <div>{errors.url}</div>
                                 ) : null}
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>LAT</Label>
+                                <Label style={{paddingTop: '10px'}}>LAT</Label>
                                 <Field
                                     type="number"
                                     name="lat"
                                     label="Lat"
                                     variant="outlined"
-                                    render={({field}) => <TextField {...field} /> }
+                                    render={({field}) => <TextField {...field} />}
                                 />
                                 {errors.lat && touched.lat ? (
                                     <div>{errors.lat}</div>
                                 ) : null}
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>LNG</Label>
+                                <Label style={{paddingTop: '10px'}}>LNG</Label>
                                 <Field
                                     type="number"
                                     name="lng"
                                     label="Lng"
                                     variant="outlined"
-                                    render={({field}) => <TextField {...field} /> }
+                                    render={({field}) => <TextField {...field} />}
                                 />
                                 {errors.lng && touched.lng ? (
                                     <div>{errors.lng}</div>
                                 ) : null}
                                 <br/>
-                                <Label style={{paddingTop:'10px'}}>City</Label>
+                                <Label style={{paddingTop: '10px'}}>City</Label>
                                 <Field as="select" name="id_City" style={fieldSelectStyle}>
                                     {cities.map(city =>
                                         <option key={city.id} value={city.id}>{city.name}</option>

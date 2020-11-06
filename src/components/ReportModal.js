@@ -63,8 +63,6 @@ export default function ReportModal(props) {
                   handleBlur,
                   handleSubmit,
                   values,
-                  touched,
-                  isValid,
                   errors
               }) => (
                 <Modal show={showReportModal} onHide={handleClose}>
