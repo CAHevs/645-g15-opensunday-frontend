@@ -11,7 +11,7 @@ import TextField from '@material-ui/core/TextField';
 import Label from '@material-ui/core/InputLabel';
 import {useSnackbar} from "notistack";
 
-
+//Function that will be called to show a Modal Form for adding a new location
 export default function AddLocationModal(props) {
     let showAddModal = props.showAddModal;
     let handleClose = props.handleClose;
@@ -25,9 +25,9 @@ export default function AddLocationModal(props) {
         user,
     } = useAuth0();
 
-    /* Add Location and edit isCreator for the user */
     let [types, setTypes] = useState([]);
 
+    //This useEffect will get all the types
     useEffect(() => {
         let getAllTypes = async (e) => {
             let types = await request(
@@ -39,7 +39,7 @@ export default function AddLocationModal(props) {
         getAllTypes().catch();
     }, [])
 
-
+    //Const with all the initialValues that will be used in Formik
     const initialValues = {
         name: "",
         address: "",
@@ -51,6 +51,7 @@ export default function AddLocationModal(props) {
         id_User: ""
     };
 
+    //Const Schema used for the validation of the Formik Form by Yup
     const addLocationSchema = Yup.object().shape({
         name: Yup.string()
             .min(2, 'Too Short')
@@ -70,6 +71,8 @@ export default function AddLocationModal(props) {
             .required('Required')
     })
 
+    //Method that will be called after the formik will be submited
+    //We parse all the int and float because we receive all values as String
     let handleAddSubmit = async (values) => {
 
         let newLocation = values;
@@ -98,6 +101,7 @@ export default function AddLocationModal(props) {
 
         let token = await getAccessTokenSilently();
 
+        //Post the new Location to the DB
         let response = await fetch(path, {
             method: 'POST',
             headers: {
@@ -141,6 +145,7 @@ export default function AddLocationModal(props) {
         await handleClose();
     }
 
+    //Const for the Field As Select
     const fieldSelectStyle = {
         border: 'none',
         width: '24.5ch',

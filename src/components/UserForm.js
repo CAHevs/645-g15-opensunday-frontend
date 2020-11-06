@@ -6,17 +6,20 @@ import endpoints from "../endpoints.json";
 import * as Yup from 'yup';
 import TextField from '@material-ui/core/TextField';
 
+//This function is used to register an user in our database
 function UserForm() {
 
+    //Const used to redirect at the end of the registeration
     const [registerDone, setregisterDone] = useState(false);
 
-
+    //Const used for the formik with the initalValues
     const initialValues = {
         firstname: "",
         lastname: "",
         phone: ""
     };
 
+    //Const used as the validation Schema for Formik with Yup
     const registerSchema = Yup.object().shape({
         firstname: Yup.string()
             .min(2, 'Too Short')
@@ -36,6 +39,7 @@ function UserForm() {
         user
     } = useAuth0();
 
+    //Method called to add the user in the DB
     let newUserResponse = async(path, token, newUserToAdd) =>{
         let response = fetch(path, {
             method: 'POST',

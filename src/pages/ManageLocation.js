@@ -13,6 +13,7 @@ import DefineDatesModal from "../components/DefineDatesModal";
 import {useSnackbar} from "notistack";
 
 
+// Columns for the DataGrid
 const columns = [
     {field: 'id', headerName: 'ID'},
     {field: 'name', headerName: 'Location', width: 250},
@@ -28,6 +29,7 @@ const columns = [
     },
 ];
 
+// Model to sort the DataGrid
 const sortModel = [
     {
         field: 'id',
@@ -40,7 +42,6 @@ export default function ManageLocations(props) {
     let [locations, setLocations] = useState([]);
     let [types, setTypes] = useState([]);
     let [cities, setCities] = useState([]);
-    let [creators, setCreators] = useState([]);
     let [selection, setSelection] = useState([]);
     let [locationToDefineDates, setLocationToDefineDates] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -53,6 +54,8 @@ export default function ManageLocations(props) {
 
     let userContext = useContext(UserContext);
 
+    //This useEffect check if the user is Authenticated and if
+    //yes, it will fetch all the locations
     useEffect(() => {
         if (userContext.userAuthenticated === null) {
             return;
@@ -60,17 +63,18 @@ export default function ManageLocations(props) {
         fetchLocations().catch();
     }, [userContext]);
 
+    //This useEffect fetch everything except the locations
     useEffect(() => {
         let fetchEverything = async () => {
             //await fetchLocations();
             await fetchTypes();
             await fetchCities();
-            await fetchCreator();
         }
 
         fetchEverything().catch();
     }, []);
 
+    // The editedValues will be use in the edit modal
     let editedValues = {
         name: "",
         address: "",
@@ -84,6 +88,8 @@ export default function ManageLocations(props) {
         getAccessTokenSilently
     } = useAuth0();
 
+    //The method to fetch all locations and if the user is not admin, it will
+    //filter the locations to get only the one created by the user
     let fetchLocations = async () => {
         locations = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
             getAccessTokenSilently);
@@ -93,20 +99,19 @@ export default function ManageLocations(props) {
         setLocations(locations);
     }
 
+    //The method to fetch all the types
     let fetchTypes = async () => {
         types = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.type}`, getAccessTokenSilently);
         setTypes(types);
     }
 
+    //The method to fetch all the cities
     let fetchCities = async () => {
         cities = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently);
         setCities(cities);
     }
 
-    let fetchCreator = async () => {
-        creators = await request(`${process.env.REACT_APP_SERVER_URL}${endpoints.city}`, getAccessTokenSilently)
-    }
-
+    //The method that will update a location when we make an edit
     let updateLocation = async (path, token, updatedLocation) => {
         await fetch(path, {
             method: 'PUT',
@@ -122,6 +127,8 @@ export default function ManageLocations(props) {
         });
     };
 
+    //Method to close all modales and fetchLocations right after since
+    //we have added/updated/deleted a location in order to rerender the list
     let handleClose = async () => {
         setShowEditModal(false);
         setShowDelModal(false);
@@ -130,6 +137,7 @@ export default function ManageLocations(props) {
         await fetchLocations();
     }
 
+    //Method to show the Edit Modal
     let handleEditClick = () => {
         if (selection.length === 1) {
             setShowEditModal(true);
@@ -138,6 +146,8 @@ export default function ManageLocations(props) {
         }
 
     }
+
+    //Method to show the DefineDates Modal
     let handleDefineDates = () => {
         if (selection.length === 1) {
             setLocationToDefineDates(selection[0]);
@@ -148,6 +158,9 @@ export default function ManageLocations(props) {
 
     }
 
+    //Method called when the Formik Form is submited for an edit.
+    //We manage the Int by parsing them since we receive them as string
+    //We manage the default value too
     let handleEditSubmit = async (values) => {
 
         let id = selection.map(part => part.id);
@@ -180,6 +193,8 @@ export default function ManageLocations(props) {
         await handleClose();
     }
 
+    //Method that show the DelModal and set a boolean to true
+    //in order to render the right modal
     let handleDeleteClick = () => {
         if (selection.length == 1) {
             delMod = true;
@@ -190,6 +205,8 @@ export default function ManageLocations(props) {
 
     }
 
+    //Method that will delete a location depending on the
+    //id of the selected row in the datagrid
     let deleteLocation = async () => {
 
         const idToDelete = selection[0].id;
@@ -210,11 +227,14 @@ export default function ManageLocations(props) {
         await handleClose();
     }
 
+    //Method that will show the Add Modal and set a boolean to true to render the right modal
     let handleAddClick = () => {
         addMod = true;
         setShowAddModal(true);
     }
 
+    //Method used in the editModal to set all the modification
+    //in a object name editedValues
     let setFieldValue = (field, newValue) => {
         if (field === 'id_Type' || field === 'id_City') {
             editedValues[field] = parseInt(newValue);
@@ -223,6 +243,7 @@ export default function ManageLocations(props) {
         }
     }
 
+    //Const used for the Field as select
     const fieldSelectStyle = {
         border: 'none',
         width: '24.5ch',
