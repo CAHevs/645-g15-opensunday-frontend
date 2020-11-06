@@ -80,7 +80,9 @@ export default function ManageLocations(props) {
         address: "",
         id_Type: "",
         url: "",
-        id_City: ""
+        id_City: "",
+        lat: "",
+        lng: "",
     }
 
 
@@ -183,6 +185,12 @@ export default function ManageLocations(props) {
         }
         if (editedLocation["url"] === "") {
             editedLocation["url"] = values[0].url;
+        }
+        if (editedLocation["lat"] === "") {
+            editedLocation["lat"] = parseFloat(selection[0].lat);
+        }
+        if (editedLocation["lng"] === "") {
+            editedLocation["lng"] = parseFloat(selection[0].lng);
         }
 
         editedLocation = JSON.stringify(editedLocation);
