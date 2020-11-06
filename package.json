@@ -15,6 +15,7 @@
     "esri-leaflet": "^2.5.1",
     "esri-leaflet-geocoder": "^2.3.3",
     "formik": "^2.2.0",
+    "formik-material-fields": "^0.0.6",
     "history": "^5.0.0",
     "leaflet": "^1.7.1",
     "nominatim-geocoder": "^0.1.4",

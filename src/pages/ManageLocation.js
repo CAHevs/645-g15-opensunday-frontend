@@ -12,6 +12,7 @@ import AddLocationModal from "../components/AddLocationModal";
 import DefineDatesModal from "../components/DefineDatesModal";
 import {useSnackbar} from "notistack";
 
+
 const columns = [
     {field: 'id', headerName: 'ID'},
     {field: 'name', headerName: 'Location', width: 250},
@@ -268,8 +269,8 @@ export default function ManageLocations(props) {
                                 onSubmit={values => (handleEditSubmit(values))}
                         >
                             <Form>
-                                <TextField
-                                    type="text"
+                              <TextField
+                                   type="text"
                                     name="name"
                                     variant="outlined"
                                     onChange={value => setFieldValue('name', value.target.value)}
@@ -284,6 +285,7 @@ export default function ManageLocations(props) {
                                     defaultValue={selection.map(part => part.address)}
                                 /><br/>
                                 <Field as="select" name="id_Type" style={fieldSelectStyle}
+                                       defaultValue={selection.map(part => part.id_Type)}
                                        onChange={value => setFieldValue('id_Type', value.target.value)}
                                 >
                                     {types.map(type =>
@@ -299,8 +301,8 @@ export default function ManageLocations(props) {
                                     defaultValue={selection.map(part => part.url)}
                                 /><br/>
                                 <Field as="select" name="id_City" style={fieldSelectStyle}
-                                       onChange={value => setFieldValue('id_City', value.target.value)}
-                                >
+                                       defaultValue={selection.map(part => part.id_City)}
+                                       onChange={value => setFieldValue('id_City', value.target.value)}>
                                     {cities.map(city =>
                                         <option key={city.id} value={city.id}>{city.name}</option>
                                     )}
@@ -314,7 +316,6 @@ export default function ManageLocations(props) {
                         <Button variant="contained" color="secondary" onClick={handleClose}>
                             Close
                         </Button>
-
                     </Modal.Footer>
                 </Modal>
             )}

@@ -8,6 +8,8 @@ import * as Yup from "yup";
 import request from "../utils/request";
 import {useAuth0} from "@auth0/auth0-react";
 import TextField from '@material-ui/core/TextField';
+import Label from '@material-ui/core/InputLabel';
+import {useSnackbar} from "notistack";
 
 
 export default function AddLocationModal(props) {
@@ -16,6 +18,7 @@ export default function AddLocationModal(props) {
     let cities = props.cities;
 
     let userContext = useContext(UserContext);
+    const {enqueueSnackbar} = useSnackbar();
 
     let {
         getAccessTokenSilently,
@@ -71,6 +74,9 @@ export default function AddLocationModal(props) {
 
         let newLocation = values;
 
+        newLocation["lat"] = parseFloat(newLocation["lat"]);
+        newLocation["lng"] = parseFloat(newLocation["lng"]);
+
         if (values.id_Type == "") {
             newLocation["id_Type"] = 1;
         } else {
@@ -86,6 +92,7 @@ export default function AddLocationModal(props) {
 
         newLocation = JSON.stringify(newLocation);
 
+        console.log("Stringfy New Location", newLocation);
 
         let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
 
@@ -130,6 +137,7 @@ export default function AddLocationModal(props) {
                 body: currentUser,
             });
         }
+        enqueueSnackbar("Location successfully added", {variant: 'success'})
         await handleClose();
     }
 
@@ -155,62 +163,75 @@ export default function AddLocationModal(props) {
                         {({errors, touched, handleSubmit}) => (
 
                             <Form>
-                                <TextField
+                                <Label>Location Name</Label>
+                                <Field
                                     type="text"
                                     name="name"
                                     label="Location name"
                                     variant="outlined"
+                                    margin="dense"
+                                    render={({field}) => <TextField {...field} /> }
                                 />
                                 {errors.name && touched.name ? (
                                     <div>{errors.name}</div>
                                 ) : null}
                                 <br/>
-                                <TextField
+                                <Label style={{paddingTop:'10px'}}>Address</Label>
+                                <Field
                                     type="text"
                                     name="address"
                                     label="Address"
                                     variant="outlined"
+                                    render={({field}) => <TextField {...field} /> }
                                 />
                                 {errors.address && touched.address ? (
                                     <div>{errors.address}</div>
                                 ) : null}
                                 <br/>
+                                <Label style={{paddingTop:'10px'}}>Type</Label>
                                 <Field as="select" name="id_Type" style={fieldSelectStyle}>
                                     {types.map(type =>
                                         <option key={type.id} value={type.id}>{type.description}</option>
                                     )}
                                 </Field>
                                 <br/>
-                                <TextField
+                                <Label style={{paddingTop:'10px'}}>URL</Label>
+                                <Field
                                     type="text"
                                     name="url"
                                     label="Url"
                                     variant="outlined"
+                                    render={({field}) => <TextField {...field} /> }
                                 />
                                 {errors.url && touched.url ? (
                                     <div>{errors.url}</div>
                                 ) : null}
                                 <br/>
-                                <TextField
+                                <Label style={{paddingTop:'10px'}}>LAT</Label>
+                                <Field
                                     type="number"
                                     name="lat"
                                     label="Lat"
                                     variant="outlined"
+                                    render={({field}) => <TextField {...field} /> }
                                 />
                                 {errors.lat && touched.lat ? (
                                     <div>{errors.lat}</div>
                                 ) : null}
                                 <br/>
-                                <TextField
+                                <Label style={{paddingTop:'10px'}}>LNG</Label>
+                                <Field
                                     type="number"
                                     name="lng"
                                     label="Lng"
                                     variant="outlined"
+                                    render={({field}) => <TextField {...field} /> }
                                 />
                                 {errors.lng && touched.lng ? (
                                     <div>{errors.lng}</div>
                                 ) : null}
                                 <br/>
+                                <Label style={{paddingTop:'10px'}}>City</Label>
                                 <Field as="select" name="id_City" style={fieldSelectStyle}>
                                     {cities.map(city =>
                                         <option key={city.id} value={city.id}>{city.name}</option>
