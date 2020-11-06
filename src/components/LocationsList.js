@@ -5,23 +5,21 @@ import endpoints from "../endpoints.json";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
-import Box from "@material-ui/core/Box";
 import Rating from "@material-ui/lab/Rating";
 import Accordion from "@material-ui/core/Accordion";
-import Modal from "react-bootstrap/Modal";
 import {Link} from "react-router-dom";
-import Button from '@material-ui/core/Button';
-import {Formik} from 'formik';
 import {UserContext} from "../utils/UserContext";
-import Form from 'react-bootstrap/Form'
 import postRequest from "../utils/postRequest";
-import * as Yup from 'yup';
 import IconButton from '@material-ui/core/IconButton';
 import CheckIcon from '@material-ui/icons/Check';
 import {useHistory, useParams} from "react-router-dom";
 import ReportModal from "./ReportModal";
-import AddLocationModal from "./AddLocationModal";
 import {useSnackbar} from "notistack";
+import Restaurant from '../assets/RestaurantPin.png';
+import Bar from '../assets/BarPin.png';
+import Museum from '../assets/MuseumPin.png';
+import Theater from '../assets/TheaterPin.png';
+import Cinema from '../assets/CinemaPin.png';
 
 
 export default function LocationsList(props) {
@@ -239,7 +237,22 @@ export default function LocationsList(props) {
                         id={loc.id + "bh-content"}
                     >
                         <div className="accordion-summary">
-                            {loc.name} ({loc.type.description})
+                            {loc.type.description === "Bar" &&
+                            <img src={Bar} width="35" height="40"></img>
+                            }
+                            {loc.type.description === "Restaurant" &&
+                            <img src={Restaurant} width="35" height="40"></img>
+                            }
+                            {loc.type.description === "Museum" &&
+                            <img src={Museum} width="35" height="40"></img>
+                            }
+                            {loc.type.description === "Theater" &&
+                            <img src={Theater} width="35" height="40"></img>
+                            }
+                            {loc.type.description === "Cinema" &&
+                            <img src={Cinema} width="35" height="40"></img>
+                            }
+                            {loc.name}
                         </div>
                     </AccordionSummary>
                     <AccordionDetails>
