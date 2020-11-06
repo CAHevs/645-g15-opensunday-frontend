@@ -255,19 +255,19 @@ export default function LocationsList(props) {
                     >
                         <div className="accordion-summary">
                             {loc.type.description === "Bar" &&
-                            <img src={Bar} width="35" height="40"/>
+                            <img src={Bar} width="40" height="40"/>
                             }
                             {loc.type.description === "Restaurant" &&
-                            <img src={Restaurant} width="35" height="40"/>
+                            <img src={Restaurant} width="40" height="40"/>
                             }
                             {loc.type.description === "Museum" &&
-                            <img src={Museum} width="35" height="40"/>
+                            <img src={Museum} width="40" height="40"/>
                             }
                             {loc.type.description === "Theater" &&
-                            <img src={Theater} width="35" height="40"/>
+                            <img src={Theater} width="40" height="40"/>
                             }
                             {loc.type.description === "Cinema" &&
-                            <img src={Cinema} width="35" height="40"/>
+                            <img src={Cinema} width="40" height="40"/>
                             }
                             {loc.name}
                         </div>

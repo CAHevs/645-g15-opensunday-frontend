@@ -22,7 +22,7 @@ function OpenMap(props) {
     //Default Icon's options
     let LeafIcon = L.Icon.extend({
         options: {
-            iconSize: [38, 95],
+            iconSize: [70, 70],
             iconAnchor: [22, 94],
             popupAnchor: [-3, -76]
         }

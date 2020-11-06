@@ -95,8 +95,6 @@ export default function AddLocationModal(props) {
 
         newLocation = JSON.stringify(newLocation);
 
-        console.log("Stringfy New Location", newLocation);
-
         let path = process.env.REACT_APP_SERVER_URL + endpoints.location;
 
         let token = await getAccessTokenSilently();
@@ -141,7 +139,7 @@ export default function AddLocationModal(props) {
                 body: currentUser,
             });
         }
-        enqueueSnackbar("Location successfully added", {variant: 'success'})
+        enqueueSnackbar("Location successfully added", {variant: 'success'});
         await handleClose();
     }
 

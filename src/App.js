@@ -31,6 +31,7 @@ import {Grid} from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Divider from "@material-ui/core/Divider";
 import Typography from '@material-ui/core/Typography';
+import {useSnackbar} from "notistack";
 
 
 function OpenSundayMap() {
@@ -49,6 +50,7 @@ function OpenSundayMap() {
     //Hooks
     let { getAccessTokenSilently } = useAuth0();
     const userContext = useContext(UserContext);
+    const {enqueueSnackbar} = useSnackbar();
     let history = useHistory();
 
     useEffect(() => {
@@ -64,12 +66,10 @@ function OpenSundayMap() {
             let locations = await request(
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.location}`,
                 getAccessTokenSilently);
-            if(locations!==null){
-                setLocations(locations);
-                setFilteredLocationsByCity(locations);
-                setFilteredLocations(locations);
-                setIsLoaded(false);
-            }
+            setLocations(locations);
+            setFilteredLocationsByCity(locations);
+            setFilteredLocations(locations);
+            setIsLoaded(true);
 
         }
 
@@ -79,8 +79,7 @@ function OpenSundayMap() {
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.type}`,
                 getAccessTokenSilently
             );
-            if(types!==null)
-                setTypes(types);
+            setTypes(types);
         }
         //Get all cities
         let getAllCities = async (e) => {
@@ -88,8 +87,7 @@ function OpenSundayMap() {
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.city}`,
                 getAccessTokenSilently
             );
-            if(cities!==null)
-                setCities(cities);
+            setCities(cities);
         }
         getAllCities().catch();
         getAllTypes().catch();
@@ -112,6 +110,7 @@ function OpenSundayMap() {
     //Close the add location modal
     let handleClose = async () => {
         setShowAddModal(false);
+        enqueueSnackbar("Please refresh the page to see your modifications", {variant: 'info'});
     }
 
     //Show the add modal
@@ -377,9 +376,18 @@ function App() {
                                     <Route exact path="/location/:locationId">
                                         {isAuthenticated ? <OpenSundayMap/> : (
                                             <div>
-                                                <h1>Welcome to OpenSunday, please log in</h1>
-                                                <Button variant="contained" color="primary"
-                                                        onClick={handleLoginClick}>Login</Button>
+                                                <Paper style={{padding: "4em", marginTop:"2em"}}>
+                                                    <br/>
+                                                    <h1>OpenSunday</h1>
+                                                    <br/>
+                                                    <Divider/>
+                                                    <br/>
+                                                    <Typography>Please login to access our functionalities</Typography>
+                                                    <br/>
+                                                    <Button variant="contained" color="primary"
+                                                            onClick={handleLoginClick}>Login</Button>
+                                                </Paper>
+
                                             </div>
                                         )}
                                     </Route>
