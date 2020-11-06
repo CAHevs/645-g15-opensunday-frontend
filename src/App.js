@@ -253,7 +253,7 @@ function App() {
                 `${process.env.REACT_APP_SERVER_URL}${endpoints.admin}/${userContext.userAuthenticated.id}`,
                 getAccessTokenSilently
             );
-            setIsAdmin(true);
+            setIsAdmin(response);
         }
 
         if (userContext.userAuthenticated === null) {
